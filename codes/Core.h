@@ -5,11 +5,14 @@
 #ifndef CODATAP_CORE_H
 #define CODATAP_CORE_H
 #include "Branch.h"
+#include "Event.h"
 
 
 class Core {
     public:
-    static Branch branch;
+    static Branch branch; // root of commands
+    static Event<void> OnStart, OnStop;
+
 };
 
 
