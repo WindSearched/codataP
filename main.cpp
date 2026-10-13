@@ -21,7 +21,7 @@ int main() {
     std::getline(std::cin, cmd);
 
     CommandArgument args;
-    Branch b =  branch.Parse({cmd},  args);
+    Branch b =  *branch.Parse({cmd},  args);
     std::cout << b.Run(args);
 
 }
