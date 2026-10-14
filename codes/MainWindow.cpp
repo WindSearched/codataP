@@ -5,6 +5,7 @@
 #include "MainWindow.h"
 #include "MainWindow.h"
 
+#include <iostream>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QListWidget>
@@ -13,10 +14,35 @@
 #include <QPlainTextEdit>
 #include <QVBoxLayout>
 
+#include "Core.h"
+
 MainWindow::MainWindow(QWidget* parent)
     : QWidget(parent)
 {
     initUI();
+
+    input->installEventFilter(this);
+
+    onEnterDown.Add([] {
+        std::cout << "entered" << std::endl;
+    });
+    onEnterDown.Add([this] {
+        auto text = this->GetInput();
+        auto split = Core::Split(text, ' ');
+
+        CommandArgument args;
+        auto* branch = Core::branch.Parse(split, args);
+        auto result = branch->Run(args);
+        this->LogLine(result);
+
+        input->clear();
+    });
+
+    connect(input, &QLineEdit::textEdited, this,
+    [this](const QString& text) {
+            onTextChanged.Invoke(Core::ToString(text));
+        }
+    );
 
     connect(button, &QPushButton::clicked,
             this, &MainWindow::onButtonClicked);
@@ -43,6 +69,51 @@ void MainWindow::initUI()
 
     mainLayout->addLayout(out);
     mainLayout->addLayout(in);
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+    if (obj == input) { //if is from input box
+        auto* key = static_cast<QKeyEvent*>(event);
+        if (event->type() == QEvent::KeyPress) { //key pressed
+            switch (key->key()) {
+                case Qt::Key_Shift:
+                    shift_ = true;
+                    return true;
+                case Qt::Key_Tab:
+                    onTabDown.Invoke();
+                    return true;
+                case Qt::Key_Return:
+                case Qt::Key_Enter:
+                    onEnterDown.Invoke();
+                    return true;
+            }
+        }
+        else if (event->type() == QEvent::KeyRelease) { // key released
+            switch (key->key()) {
+                case Qt::Key_Shift:
+                    shift_ = false;
+                    return true;
+            }
+        }
+
+        return QWidget::eventFilter(obj, event);
+    }
+}
+void MainWindow::LogLine(std::string logged) {
+    log->appendPlainText(Core::ToQString(logged));
+}
+
+void MainWindow::AppendInput(std::string text) {
+    auto v = Core::ToQString(text);
+    input->setText(input->text() + v);
+}
+
+void MainWindow::SetInput(std::string text) {
+    auto v = Core::ToQString(text);
+    input->setText(v);
+}
+std::string MainWindow::GetInput() {
+    return Core::ToString(input->text());
 }
 
 void MainWindow::onButtonClicked()

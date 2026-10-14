@@ -55,7 +55,6 @@ void Windowing(QWidget& window)
 
 int main(int argc, char *argv[]) {
     static Tube<std::string> tube;
-    static SEvent<> OnStart, OnStop;
     static Branch& branch = Core::branch;
 
 
@@ -66,22 +65,17 @@ int main(int argc, char *argv[]) {
             })
         );
 
-    OnStart.Add([] {
-        std::cout << "OnStart" << std::endl;
-    });
-
-
 
     QApplication app(argc, argv);
 
     MainWindow mainWindow;
     mainWindow.show();
 
-    OnStart.Invoke();
+    Core::OnStart.Invoke();
 
     auto exec = app.exec();
 
-    OnStop.Invoke();
+    Core::OnStop.Invoke();
 
     return exec;
 
