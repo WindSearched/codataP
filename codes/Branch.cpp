@@ -50,7 +50,7 @@ Branch& Branch::AddBranch(Branch branch) {
     return *this;
 }
 
-Branch& Branch::AddArgument(BranchArgument& argument) {
+Branch& Branch::AddArgument(BranchArgument argument) {
     args.push_back(argument);
     return *this;
 }

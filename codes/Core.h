@@ -19,6 +19,7 @@ class Core {
     static QString ToQString(std::string text);
     static std::string ToString(QString text);
     static  std::vector<std::string> Split(const std::string& str, char delimiter);
+    
 };
 
 

@@ -18,52 +18,30 @@
 #include <string>
 
 #include "codes/MainWindow.h"
-
-void Windowing(QWidget& window)
-{
-    window.resize(800, 400);
-    window.setWindowTitle("codataP");
-
-    auto* layout = new QVBoxLayout(&window);
-    auto* up = new QHBoxLayout();
-    auto* down = new QHBoxLayout();
-
-    auto* logBox = new QPlainTextEdit(&window);
-    up->addWidget(logBox, 3);
-    logBox-> setReadOnly(true);
-    logBox->resize(510,267);
-    logBox->move(40,40);
-
-    auto* listBox = new QListWidget(&window);
-    up->addWidget(listBox, 1);
-    listBox->addItem("Branch 1");
-    listBox->addItem("Branch 2");
-    listBox->addItem("Branch 3");
-
-    layout->addLayout(up);
-
-    auto* inputBox = new QLineEdit(&window);
-    down->addWidget(inputBox, 9);
-
-    auto* button = new QPushButton(&window);
-    down -> addWidget(button, 1);
-
-    layout->addLayout(down);
-
-
-}
-
 int main(int argc, char *argv[]) {
     static Tube<std::string> tube;
     static Branch& branch = Core::branch;
 
 
-    Core::branch.AddBranch(
+    Core::branch
+        .AddBranch(
         Branch{"test"}
             .AddExecution([](CommandArgument args)-> std::string{
                 return "d";
             })
-        );
+        )
+        .AddBranch(
+            Branch{"print"}
+                .AddArgument(BranchArgument{"output"})
+                .AddExecution([](CommandArgument args)-> std::string {
+                    std::string o;
+                    if (args.TryGet("output", o)) {
+                        return o;
+                    }
+                    return "the argument 'output' is not valid";
+                })
+            )
+    ;
 
 
     QApplication app(argc, argv);

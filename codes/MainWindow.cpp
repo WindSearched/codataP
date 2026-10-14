@@ -9,8 +9,6 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QListWidget>
-#include <QTextEdit>
-#include <QHBoxLayout>
 #include <QPlainTextEdit>
 #include <QVBoxLayout>
 
@@ -26,6 +24,7 @@ MainWindow::MainWindow(QWidget* parent)
     onEnterDown.Add([] {
         std::cout << "entered" << std::endl;
     });
+    //add enter function
     onEnterDown.Add([this] {
         auto text = this->GetInput();
         auto split = Core::Split(text, ' ');
@@ -36,6 +35,87 @@ MainWindow::MainWindow(QWidget* parent)
         this->LogLine(result);
 
         input->clear();
+    });
+    //add the suggestion
+    onTextChanged.Add([this](std::string text) {
+        auto s = Core::Split(text, ' ');
+        auto last = s.empty() ? "" : s.back();
+        CommandArgument args;
+        auto* branch = Core::branch.Parse(s, args);
+
+        // branch.branches. name s
+        // branch. arg.arg s
+
+        // 提取字段
+        auto l1 = branch->branches
+            | std::views::transform([](const Branch& b) {
+                  return b.name;
+              });
+
+        auto l2 = branch->args
+            | std::views::transform([](const BranchArgument& a) {
+                  return a.arg;
+              });
+
+        // 合并到同一个 vector
+        std::vector<std::string> result;
+
+        std::ranges::copy(l1, std::back_inserter(result));
+        std::ranges::copy(l2, std::back_inserter(result));
+
+        // 剔除满足条件的元素：示例为删除空字符串
+        std::erase_if(result, [last](const std::string& s) {
+            return !s.starts_with(last);
+        });
+
+        //set to listbox
+        SetList(result);
+
+    });
+    //add setting of suggestion
+    onTabDown.Add([this] {
+        if (list->count() == 0) return;
+        auto item = list->currentItem();
+        if (item == nullptr) item = list->item(0);
+
+        auto t = this->GetInput();
+
+        auto pos = t.find_last_of(' ');
+        if (pos != std::string::npos) {
+            t.erase(pos);
+        }
+        else {
+            t.clear();
+        }
+
+        t += ( t.empty() ? "" : " ") + Core::ToString(item->text());
+
+        this->SetInput(t);
+    });
+    //adding selection of suggestion
+    onUpDown.Add([this] {
+        int row = list->currentRow();
+        if (row == -1) {
+            row = 0;
+        }
+        else {
+            row--;
+            if (row <0)
+                row = list->count() - 1;
+        }
+        list->setCurrentRow(row);
+    });
+    onDownDown.Add([this] {
+        int row = list->currentRow();
+        if (row == -1) {
+            row = 0;
+        }
+        else {
+            row++;
+            if (row >= list->count())
+                row = 0;
+        }
+        list->setCurrentRow(row);
     });
 
     connect(input, &QLineEdit::textEdited, this,
@@ -58,8 +138,9 @@ void MainWindow::initUI()
 
     list = new QListWidget(this);
     input = new QLineEdit(this);
-    button = new QPushButton("执行", this);
+    button = new QPushButton("Enter", this);
     log = new QPlainTextEdit(this);
+    inputSuggest = new SuggestLineEdit(this);
 
     out->addWidget(log, 3);
     out->addWidget(list, 1);
@@ -85,6 +166,19 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
                 case Qt::Key_Return:
                 case Qt::Key_Enter:
                     onEnterDown.Invoke();
+                    return true;
+
+                case Qt::Key_Right:
+                    onRightDown.Invoke();
+                    return true;
+                case Qt::Key_Left:
+                    onLeftDown.Invoke();
+                    return true;
+                case Qt::Key_Up:
+                    onUpDown.Invoke();
+                    return true;
+                case Qt::Key_Down:
+                    onDownDown.Invoke();
                     return true;
             }
         }
@@ -114,6 +208,13 @@ void MainWindow::SetInput(std::string text) {
 }
 std::string MainWindow::GetInput() {
     return Core::ToString(input->text());
+}
+
+void MainWindow::SetList(std::vector<std::string> elements) {
+    list->clear();
+    for (auto element : elements) {
+        list->addItem(Core::ToQString(element));
+    }
 }
 
 void MainWindow::onButtonClicked()

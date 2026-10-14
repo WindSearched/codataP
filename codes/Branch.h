@@ -49,7 +49,7 @@ public:
     Branch(std::string name);
 
     Branch& AddBranch(Branch branch);
-    Branch& AddArgument(BranchArgument& argument);
+    Branch& AddArgument(BranchArgument argument);
     Branch& AddExecution(std::function<std::string(CommandArgument)> execution);
 
     Branch* Parse(std::vector<std::string> split, CommandArgument& args);
