@@ -17,12 +17,22 @@
 MainWindow::MainWindow(QWidget* parent)
     : QWidget(parent)
 {
+    tubeCache.New(10);
+
     initUI();
 
     input->installEventFilter(this);
 
     onEnterDown.Add([] {
         std::cout << "entered" << std::endl;
+    });
+    //add put in tube function
+    onEnterDown.Add([this] {
+        auto t = this->GetInput();
+        if (t.empty())return;
+
+        tubeCache.Put(t);
+        tubeCache.Revert();
     });
     //add enter function
     onEnterDown.Add([this] {
@@ -35,6 +45,20 @@ MainWindow::MainWindow(QWidget* parent)
         this->LogLine(result);
 
         input->clear();
+    });
+    // command cache
+    onUpDown.Add([this] {
+        if (tubeCache.pointer == 0)
+            tubeCache.PutFront(this->GetInput());
+        auto t = tubeCache.MoveBack();
+        if (!t.empty())
+            SetInput(t);
+    });
+    // command cache
+    onDownDown.Add([this] {
+        if (tubeCache.pointer != 0) {
+            SetInput(tubeCache.MoveFront());
+        }
     });
     //add the suggestion
     onTextChanged.Add([this](std::string text) {
@@ -169,10 +193,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
 
                 case Qt::Key_Right:
                     onRightDown.Invoke();
-                    return true;
+                    return shift_;
                 case Qt::Key_Left:
                     onLeftDown.Invoke();
-                    return true;
+                    return shift_;
                 case Qt::Key_Up:
                     onUpDown.Invoke();
                     return true;

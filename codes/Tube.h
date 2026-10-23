@@ -29,11 +29,11 @@ public:
             return cast(pointer + 1);
         }
         else {
-            return 0;
+            return pointer;
         }
     }
     T Get(int index) {
-        int p = cast(Head() + index);
+        int p = cast( pointer - index);
         return tube[p];
     }
     T First() {
@@ -53,6 +53,10 @@ public:
         tube.resize(size);
         count = 0;
         pointer = -1;
+    }
+
+    int size() {
+        return tube.size();
     }
 };
 

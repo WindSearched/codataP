@@ -13,6 +13,8 @@
 #include <QPainter>
 
 #include "SEvent.h"
+#include "Tube.h"
+#include "classes/TubeCache.h"
 
 class Branch;
 class QPlainTextEdit;
@@ -47,7 +49,6 @@ public:
 private:
     void initUI();
 
-    //QLineEdit* input;
     QPushButton* button;
     QListWidget* list;
     QPlainTextEdit* log;
@@ -56,6 +57,8 @@ private:
     SEvent<std::string> onTextChanged;
     SEvent<> onEnterDown, onTabDown,
         onRightDown, onLeftDown, onUpDown, onDownDown;
+
+    TubeCache<std::string> tubeCache;
 
     ///if the shift key is pressed
     bool shift_ = false;

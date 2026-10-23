@@ -19,7 +19,8 @@ add_executable(codataP main.cpp
         codes/SEvent.cpp
         codes/SEvent.h
         codes/MainWindow.cpp
-        codes/MainWindow.h)
+        codes/MainWindow.h
+        codes/classes/TubeCache.h)
 
 target_link_libraries(codataP
         PRIVATE Qt6::Widgets
