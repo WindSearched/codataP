@@ -31,6 +31,16 @@ public:
     bool TryParamGet(int index, std::string& value);
 
     void Set(std::string key, std::string value);
+    std::vector<std::string> GetArgs() {
+        std::vector<std::string> o;
+        for (const auto& arg : args) {
+            o.push_back(arg.second);
+        }
+        return o;
+    }
+    int Count() {
+        return args.size();
+    }
 };
 
 class Branch {

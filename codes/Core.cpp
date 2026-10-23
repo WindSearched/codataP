@@ -26,12 +26,17 @@ std::string Core::ToString(QString text) {
 std::vector<std::string> Core::Split(const std::string &str, char delimiter)
 {
     std::vector<std::string> result;
-    std::stringstream ss(str);
-    std::string item;
+    size_t start = 0;
+    size_t end = str.find(delimiter);
 
-    while (std::getline(ss, item, delimiter)) {
-        result.push_back(item);
+    while (end != std::string::npos) {
+        result.push_back(str.substr(start, end - start));
+        start = end + 1;
+        end = str.find(delimiter, start);
     }
+    // 即便空格在末尾，此时 start 正好等于 str.length()
+    // str.substr(start) 会正确返回一个空串 "" 并加入 vector
+    result.push_back(str.substr(start));
 
     return result;
 }

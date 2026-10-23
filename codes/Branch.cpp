@@ -92,10 +92,11 @@ Branch* Branch::Parse(
         return matched->Parse(split, args);
     }
 
-    if (split.size() == this->args.size()) {
-        for (size_t i = 0; i < this->args.size(); i++) {
-            args.Set(this->args[i].arg, split[i]);
-        }
+    // if (split.size() == this->args.size()) {
+    //
+    // }
+    for (size_t i = 0; i < this->args.size(); i++) {
+        args.Set(this->args[i].arg, split[i]);
     }
 
     return this;

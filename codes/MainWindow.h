@@ -14,10 +14,12 @@
 
 #include "SEvent.h"
 
+class Branch;
 class QPlainTextEdit;
 class QLineEdit;
 class QPushButton;
 class QListWidget;
+class QPaintEvent;
 
 class SuggestLineEdit : public QLineEdit
 {
@@ -26,34 +28,10 @@ class SuggestLineEdit : public QLineEdit
 public:
     using QLineEdit::QLineEdit;
 
-    void setSuggestion(const QString& text)
-    {
-        suggestion = text;
-        update();
-    }
+    void setSuggestion(const QString& text);
 
 protected:
-    void paintEvent(QPaintEvent* event) override
-    {
-        QLineEdit::paintEvent(event);
-
-        if (suggestion.isEmpty() || !hasFocus())
-            return;
-
-        QPainter painter(this);
-        painter.setPen(QColor(160, 160, 160));
-
-        const int x = fontMetrics().horizontalAdvance(
-            text().left(cursorPosition())
-        );
-
-        painter.drawText(
-            x + 8,
-            (height() + fontMetrics().ascent()
-                 - fontMetrics().descent()) / 2,
-            suggestion
-        );
-    }
+    void paintEvent(QPaintEvent* event) override;
 
 private:
     QString suggestion;
@@ -69,11 +47,11 @@ public:
 private:
     void initUI();
 
-    QLineEdit* input;
+    //QLineEdit* input;
     QPushButton* button;
     QListWidget* list;
     QPlainTextEdit* log;
-    SuggestLineEdit *inputSuggest;
+    SuggestLineEdit *input;
 
     SEvent<std::string> onTextChanged;
     SEvent<> onEnterDown, onTabDown,
@@ -92,6 +70,7 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
 private slots:
     void onButtonClicked();
+    void SetInputSuggestion(Branch* node, std::vector<std::string> args, int listCount);
 };
 
 

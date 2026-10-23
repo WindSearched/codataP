@@ -43,9 +43,6 @@ MainWindow::MainWindow(QWidget* parent)
         CommandArgument args;
         auto* branch = Core::branch.Parse(s, args);
 
-        // branch.branches. name s
-        // branch. arg.arg s
-
         // 提取字段
         auto l1 = branch->branches
             | std::views::transform([](const Branch& b) {
@@ -70,7 +67,10 @@ MainWindow::MainWindow(QWidget* parent)
 
         //set to listbox
         SetList(result);
-
+        auto a = s | std::views::drop(args.Count()) | std::views::take(s.size());
+        std::vector<std::string> l;
+        std::ranges::copy(a, std::back_inserter(l));
+        SetInputSuggestion(branch, l, result.size());
     });
     //add setting of suggestion
     onTabDown.Add([this] {
@@ -137,10 +137,9 @@ void MainWindow::initUI()
     auto* in = new QHBoxLayout();
 
     list = new QListWidget(this);
-    input = new QLineEdit(this);
+    input = new SuggestLineEdit(this);
     button = new QPushButton("Enter", this);
     log = new QPlainTextEdit(this);
-    inputSuggest = new SuggestLineEdit(this);
 
     out->addWidget(log, 3);
     out->addWidget(list, 1);
@@ -230,4 +229,57 @@ void MainWindow::onButtonClicked()
 
     // 清空输入框
     input->clear();
+}
+
+void MainWindow::SetInputSuggestion(Branch* node, std::vector<std::string> args, int listCount) {
+    std::string sug = "";
+    auto add =  [&sug](std::string t) {
+        sug += sug == "" ? t : "/" + t;
+    };
+
+    auto last = args.size() > 0 ? args.back() : "";
+    args.pop_back();//remove the last
+    bool branchnotfound = !last.empty() && listCount == 0;
+    int count = args.size();
+    bool brancharg = node->args.size() >0;
+
+    if (branchnotfound) {//not found branches
+        if (!brancharg)
+            add("branch not found");
+    }
+    else if (node->branches.size() > 0) {
+        add("branch");
+
+    }
+    if (!node->args.empty() && count  < (int) node->args.size())
+        add(node->args[count].arg);
+
+    sug = "<" + sug + ">";
+    input->setSuggestion(Core::ToQString(sug));
+}
+
+
+void SuggestLineEdit::setSuggestion(const QString& text)
+{
+    suggestion = text;
+    update();
+}
+
+void SuggestLineEdit::paintEvent(QPaintEvent* event)
+{
+    QLineEdit::paintEvent(event);
+
+    if (suggestion.isEmpty() || !hasFocus())
+        return;
+
+    QPainter painter(this);
+    painter.setPen(QColor(160, 160, 160));
+
+    const QFontMetrics fm(font());
+    const QString beforeCursor = text().left(cursorPosition());
+
+    const int x = 8 + fm.horizontalAdvance(beforeCursor);
+    const int y = (height() + fm.ascent() - fm.descent()) / 2;
+
+    painter.drawText(x, y, suggestion);
 }
