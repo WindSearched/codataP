@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 4.3)
 project(codataP)
 
 set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_AUTOMOC  ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
-
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network)
 qt_standard_project_setup()
 
 add_executable(codataP main.cpp
@@ -20,8 +22,15 @@ add_executable(codataP main.cpp
         codes/SEvent.h
         codes/MainWindow.cpp
         codes/MainWindow.h
-        codes/classes/TubeCache.h)
-
-target_link_libraries(codataP
-        PRIVATE Qt6::Widgets
+        codes/classes/TubeCache.h
+        codes/branches/math.h
+        utils/SingleInstance.cpp
+        utils/SingleInstance.h
 )
+
+target_link_libraries(codataP PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets
+        Qt${QT_VERSION_MAJOR}::Network
+)
+
+add_subdirectory(CTerminal)

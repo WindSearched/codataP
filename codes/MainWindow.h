@@ -45,6 +45,8 @@ class MainWindow : public QWidget
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
+public slots:
+    void showAndActivate();
 
 private:
     void initUI();

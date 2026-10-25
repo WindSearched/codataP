@@ -3,7 +3,6 @@
 //
 
 #include "MainWindow.h"
-#include "MainWindow.h"
 
 #include <iostream>
 #include <QLineEdit>
@@ -11,6 +10,8 @@
 #include <QListWidget>
 #include <QPlainTextEdit>
 #include <QVBoxLayout>
+#include <QLabel>
+#include <ranges>
 
 #include "Core.h"
 
@@ -20,6 +21,9 @@ MainWindow::MainWindow(QWidget* parent)
     tubeCache.New(10);
 
     initUI();
+    auto *central = new QWidget(this);
+    auto *layout = new QVBoxLayout(central);
+    //setCentralWidget(central);
 
     input->installEventFilter(this);
 
@@ -306,4 +310,16 @@ void SuggestLineEdit::paintEvent(QPaintEvent* event)
     const int y = (height() + fm.ascent() - fm.descent()) / 2;
 
     painter.drawText(x, y, suggestion);
+}
+void MainWindow::showAndActivate() {
+    // 如果窗口最小化，则恢复正常状态
+    if (isMinimized()) {
+        showNormal();
+    } else {
+        show();
+    }
+
+    // 将窗口提升到前台并请求键盘焦点
+    raise();
+    activateWindow();
 }
