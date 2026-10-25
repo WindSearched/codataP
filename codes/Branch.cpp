@@ -109,3 +109,9 @@ std::string Branch::Run(CommandArgument& args) {
 
     return "Cannot found this command branch ";
 }
+
+std::string Branch::Command(std::vector<std::string> split) {
+    CommandArgument args;
+    auto* node = Parse(split, args);
+    return node->Run(args);
+}

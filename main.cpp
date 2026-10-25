@@ -3,7 +3,13 @@
 #include <QCommandLineOption>
 #include <QDebug>
 #include <QTimer>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QProcessEnvironment>
+#include <QDir>
+#include <QLocalSocket>
 
+#include <iostream>
 #include <string>
 
 #include "codes/Tube.h"
@@ -11,20 +17,33 @@
 #include "codes/Core.h"
 #include "codes/MainWindow.h"
 #include "utils/SingleInstance.h"
+static bool launchedFromTerminal()
+{
+#ifdef Q_OS_WIN
+    return GetConsoleWindow() != nullptr;   // 需 #include <windows.h>
+#else
+    return isatty(STDIN_FILENO);            // 需 #include <unistd.h>
+#endif
+}
 
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
+    QDir::setCurrent(QCoreApplication::applicationDirPath());
 
     QApplication::setApplicationName("Codata");
     QApplication::setOrganizationName("WS");
 
-    // 关闭窗口后继续在后台运行
+    // 关闭窗口后继续在后台运行（注意：如需真正后台常驻，
+    // 应结合 MainWindow 的关闭策略，这里保持原状）
     app.setQuitOnLastWindowClosed(true);
 
+    // 待执行的 exec（本进程成为主实例时使用）
+    bool hasPendingExec = false;
     QString pendingExecMethod;
+    QStringList pendingExecArgs;
 
-    // 命令行参数
+    // ---- 命令行参数 ----
     QCommandLineParser parser;
     parser.setApplicationDescription(
         "Codata single-instance application"
@@ -35,14 +54,12 @@ int main(int argc, char* argv[])
         QStringList() << "hidden",
         "Start without showing the main window"
     );
-
     parser.addOption(hiddenOption);
 
-    // 支持：codataP close
     parser.addPositionalArgument(
         "command",
-        "Command: close",
-        "[close]"
+        "Command: close | exec <method> [args...]",
+        "[close|exec]"
     );
 
     parser.process(app);
@@ -50,56 +67,121 @@ int main(int argc, char* argv[])
     bool startHidden = parser.isSet(hiddenOption);
     const QStringList arguments = parser.positionalArguments();
 
-    const QString serverName =
-        "Codata_WS_instance";
+    const QString serverName = "Codata_WS_instance";
 
     SingleInstance instance(serverName);
 
-    // close：请求已有实例退出，不启动新实例
-    if (!arguments.isEmpty() &&
-        arguments.first() == "close") {
-
+    // =========================================================
+    // ① close：请求已有实例退出
+    // =========================================================
+    if (!arguments.isEmpty() && arguments.first() == "close") {
         if (instance.sendCommand("QUIT")) {
             qInfo() << "Quit request sent.";
         } else {
             qInfo() << "No running instance found.";
         }
-
         return 0;
     }
 
-    // ---- 新增：exec 命令 ----
+    // =========================================================
+    // ② exec <method> [args...]
+    // =========================================================
     if (!arguments.isEmpty() && arguments.first() == "exec") {
         if (arguments.size() < 2) {
-            qWarning() << "exec 需要一个方法名，例如: codata exec refresh";
+            qWarning() << "用法: codata exec <method> [args...]";
             return 1;
         }
 
         const QString method = arguments.at(1);
 
+        // 其余参数原样透传
+        QJsonArray arr;
+        for (int i = 2; i < arguments.size(); ++i) arr.append(arguments.at(i));
+        const QByteArray argsJson =
+            QJsonDocument(arr).toJson(QJsonDocument::Compact);
+
+        // 协议：EXEC:<method>\x1f<json>
+        const QString cmd = "EXEC:" + method
+                          + QChar(0x1f)
+                          + QString::fromUtf8(argsJson);
+
         // 后台执行，不弹窗
         startHidden = true;
 
-        // ① 先尝试交给已有实例
-        if (instance.sendCommand("EXEC:" + method)) {
-            qInfo() << "Exec request sent:" << method;
+        // ① 已有实例？发过去并等结果
+        QByteArray response;
+        if (instance.sendCommandWithResponse(cmd, response)) {
+            std::cout << response.constData() << std::endl;
             return 0;
         }
 
-        // ② 没有实例 → 走到下方 start()，本进程成为主实例
+        // ② 无实例（或超时）→ 本地创建并执行
         qInfo() << "No instance running; will create one and exec locally.";
+        hasPendingExec = true;
         pendingExecMethod = method;
-
-        // 注意：不 return，让流程继续到 instance.start()
+        pendingExecArgs = arguments.mid(2);
+        // 不 return，继续到 detach 判定 / instance.start()
     }
-    // ------------------------
 
-    // 检查是否已有实例
+    // =========================================================
+    // ③ detach 判定：必须在 instance.start() 之前！
+    //    此时本进程还没有 listen，探测到的才是"别的实例"
+    // =========================================================
+    if (!qEnvironmentVariableIsSet("COD.._CHILD") && launchedFromTerminal())  {
+        QLocalSocket probe;
+        probe.connectToServer(serverName);
+        const bool hasInstance = probe.waitForConnected(300);
+        probe.abort();
+
+        if (!hasInstance) {
+            // 无实例 → detached 启动自己，父进程立刻返回，终端不卡
+            QProcess p;
+            auto env = QProcessEnvironment::systemEnvironment();
+            env.insert("COD.._CHILD", "1");
+            p.setProcessEnvironment(env);
+            p.setProgram(QCoreApplication::applicationFilePath());
+
+            QStringList childArgs;
+            if (startHidden) childArgs << "--hidden";
+
+            // exec 竞态落到本地：把 method + args 传给子进程
+            // 注意：这里必须在 hasPendingExec 被清空之前读取！
+            if (hasPendingExec) {
+                childArgs << "exec" << pendingExecMethod << pendingExecArgs;
+            }
+
+            p.setArguments(childArgs);
+            p.setWorkingDirectory(QDir::currentPath());
+
+            if (p.startDetached()) {
+                qInfo() << "Background instance started.";
+                return 0;          // ★ 终端立刻返回
+            }
+            qWarning() << "startDetached failed; running in foreground.";
+        }
+        // hasInstance == true → 继续到 ④
+        // instance.start() 会发 SHOW，返回 Existing，本进程随即退出
+    }
+
+    // =========================================================
+    // ④ instance.start()
+    // =========================================================
     const auto instanceResult = instance.start(!startHidden);
 
     if (instanceResult == SingleInstance::Result::Existing) {
-        if (!pendingExecMethod.isEmpty()) {
-            instance.sendCommand("EXEC:" + pendingExecMethod);   // 竞态补发
+        // 竞态补发（exec 分支没抢到实例，这里补一次）
+        if (hasPendingExec) {
+            QJsonArray arr;
+            for (const auto& a : pendingExecArgs) arr.append(a);
+            const QByteArray argsJson =
+                QJsonDocument(arr).toJson(QJsonDocument::Compact);
+            const QString cmd = "EXEC:" + pendingExecMethod
+                              + QChar(0x1f)
+                              + QString::fromUtf8(argsJson);
+            QByteArray response;
+            if (instance.sendCommandWithResponse(cmd, response)) {
+                std::cout << response.constData() << std::endl;
+            }
         }
         return 0;
     }
@@ -109,18 +191,20 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // 以下只由主实例执行
+    // =========================================================
+    // ⑤ 以下只由主实例执行
+    //    （detached 的子进程，或 COD.._CHILD=1 调试时前台进程）
+    // =========================================================
 
-    // 初始化命令系统
+    // ---- 初始化命令系统 ----
     static Tube<std::string> tube;
-    static Branch& branch = Core::branch;
 
     Core::branch
         .AddBranch(
             Branch{"test"}
                 .AddExecution(
                     [](CommandArgument args) -> std::string {
-                        return "d";
+                        return "This is the test branch of Codata program";
                     }
                 )
         )
@@ -130,11 +214,9 @@ int main(int argc, char* argv[])
                 .AddExecution(
                     [](CommandArgument args) -> std::string {
                         std::string output;
-
                         if (args.TryGet("output", output)) {
                             return output;
                         }
-
                         return "the argument 'output' is not valid";
                     }
                 )
@@ -142,7 +224,21 @@ int main(int argc, char* argv[])
 
     MainWindow mainWindow;
 
-    // 接收到 SHOW 请求时显示窗口
+    // ---- exec 分派：命令树即白名单 ----
+    auto dispatchExec = [](const QString& method,
+                                      const QStringList& args) -> QString {
+        std::vector<std::string> split;
+        split.push_back(Core::ToString(method));
+        for (const auto& arg : args) {
+            split.push_back(Core::ToString(arg));
+        }
+        auto put = Core::branch.Command(split);
+        return Core::ToQString(put);
+    };
+
+    instance.setExecHandler(dispatchExec);
+
+    // ---- 信号连接 ----
     QObject::connect(
         &instance,
         &SingleInstance::showRequested,
@@ -157,7 +253,6 @@ int main(int argc, char* argv[])
         }
     );
 
-    // 接收到 QUIT 请求时正常退出事件循环
     QObject::connect(
         &instance,
         &SingleInstance::quitRequested,
@@ -165,28 +260,7 @@ int main(int argc, char* argv[])
         &QCoreApplication::quit
     );
 
-    QObject::connect(
-    &instance,
-    &SingleInstance::execRequested,
-    &mainWindow,
-    [&mainWindow](const QString& method) {
-        qInfo() << "Received EXEC:" << method;
-
-        // 白名单映射，避免任意方法调用
-        const QHash<QString, std::function<void()>> kMethods = {
-
-        };
-
-        auto it = kMethods.find(method);
-        if (it != kMethods.end()) {
-            it.value()();
-            }
-        else {
-            qWarning() << "Unknown exec method:" << method;
-            }
-        }
-    );
-
+    // ---- 窗口显示 ----
     if (!startHidden) {
         std::cerr << "[Codata] Showing main window" << std::endl;
         mainWindow.show();
@@ -194,28 +268,22 @@ int main(int argc, char* argv[])
         std::cerr << "[Codata] Starting hidden" << std::endl;
     }
 
-    //Core::OnStart.Invoke();
-
-    // const int result = app.exec();
-    //
-    // // 正常退出时执行
-    // Core::OnStop.Invoke();
-    //
-    // return result;
-
-    if (!pendingExecMethod.isEmpty()) {
+    // ---- 本地 pending exec（子进程真正执行的那次） ----
+    if (hasPendingExec) {
         const QString method = pendingExecMethod;
-        pendingExecMethod.clear();
+        const QStringList args = pendingExecArgs;
+        hasPendingExec = false;
+
         qInfo() << "Executing pending method locally:" << method;
 
-        // 延迟到事件循环启动后执行，避免构造期未就绪
-        QTimer::singleShot(0, &mainWindow, [&mainWindow, method]() {
-            if (method == "refresh")       mainWindow.refresh();
-            else if (method == "doSomething") { /* ... */ }
-            else qWarning() << "Unknown exec method:" << method;
-        });
+        QTimer::singleShot(0, &mainWindow,
+            [dispatchExec, method, args]() {
+                const QString r = dispatchExec(method, args);
+                std::cout << r.constData() << std::endl;
+            });
     }
 
+    // ---- 生命周期钩子 + 事件循环 ----
     qInfo() << "Before Core::OnStart";
     std::cerr << "Before Core::OnStart" << std::endl;
     Core::OnStart.Invoke();

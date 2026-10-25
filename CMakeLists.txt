@@ -26,6 +26,7 @@ add_executable(codataP main.cpp
         codes/branches/math.h
         utils/SingleInstance.cpp
         utils/SingleInstance.h
+        codes/branches/math.cpp
 )
 
 target_link_libraries(codataP PRIVATE
@@ -34,3 +35,9 @@ target_link_libraries(codataP PRIVATE
 )
 
 add_subdirectory(CTerminal)
+
+if(WIN32)
+    set_target_properties(Codata PROPERTIES
+            WIN32_EXECUTABLE FALSE
+            LINK_FLAGS "/SUBSYSTEM:CONSOLE")
+endif()

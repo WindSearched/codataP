@@ -65,6 +65,7 @@ public:
     Branch* Parse(std::vector<std::string> split, CommandArgument& args);
 
     std::string Run(CommandArgument& args);
+    std::string Command(std::vector<std::string> split);
 };
 
 #endif // CODATAP_BRANCH_H

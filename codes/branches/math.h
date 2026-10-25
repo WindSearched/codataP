@@ -19,5 +19,10 @@ class math {
             })
         )
     ;
+
+    static double Abs(double x);
+    static double Pow(double a, double b);
+    static double Root(double n, double root);
+    static double Sqrt(float a);
 };
 

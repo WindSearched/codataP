@@ -27,9 +27,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     input->installEventFilter(this);
 
-    onEnterDown.Add([] {
-        std::cout << "entered" << std::endl;
-    });
     //add put in tube function
     onEnterDown.Add([this] {
         auto t = this->GetInput();
@@ -43,10 +40,7 @@ MainWindow::MainWindow(QWidget* parent)
         auto text = this->GetInput();
         auto split = Core::Split(text, ' ');
 
-        CommandArgument args;
-        auto* branch = Core::branch.Parse(split, args);
-        auto result = branch->Run(args);
-        this->LogLine(result);
+        this -> LogLine(Core::branch.Command(split)) ;
 
         input->clear();
     });
