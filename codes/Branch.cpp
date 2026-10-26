@@ -4,6 +4,11 @@
 
 #include "Branch.h"
 
+#include <limits>
+#include <stdexcept>
+
+using string = std::string;
+
 BranchArgument::BranchArgument(std::string arg)
     : arg(arg) {
 }
@@ -29,6 +34,48 @@ bool CommandArgument::TryGet(std::string key, std::string& value) {
     return false;
 }
 
+int CommandArgument::GetInt(std::string key) {
+    auto i = Get(key);
+    return std::stoi(i);
+}
+
+bool CommandArgument::TryGetInt(std::string key, int &value) {
+    std::string s;
+    if (TryGet(key, s)) {
+        try {
+            value = std::stoi(s);
+            return  true;  // 抛 invalid_argument
+        } catch (const std::invalid_argument&) {
+            // 不是数字
+            value = std::numeric_limits<int>::min();
+            return false;
+        } catch (const std::out_of_range&) {
+            // 数字太大/太小
+            value = std::numeric_limits<int>::max();
+            return false;
+        }
+    }
+    return false;
+}
+
+bool CommandArgument::GetBool(std::string key) {
+    string s = Get(key);
+    return s == "true" || s == "1" || s == "y";
+}
+
+bool CommandArgument::TryGetBool(std::string key, bool &value) {
+    string s = Get(key);
+    if (s == "true" || s == "1" || s == "y") {
+        value = true;
+        return true;
+    }
+    else if (s == "false" || s == "0" || s == "n") {
+        value = false;
+        return true;
+    }
+    return false;
+}
+
 std::string CommandArgument::ParamGet(int index) {
     return Get("param" + std::to_string(index));
 }
@@ -50,9 +97,17 @@ Branch& Branch::AddBranch(Branch branch) {
     return *this;
 }
 
+Branch & Branch::AddBranch(std::string name) {
+    return AddBranch(Branch(name));
+}
+
 Branch& Branch::AddArgument(BranchArgument argument) {
     args.push_back(argument);
     return *this;
+}
+
+Branch & Branch::AddArgument(std::string name) {
+    return AddArgument(BranchArgument(name));
 }
 
 Branch& Branch::AddExecution(
@@ -73,12 +128,13 @@ Branch* Branch::Parse(
 
     Branch* matched = nullptr;
 
-    for (auto& b : branches) {
-        if (b.name == head || b.abbreviation == head) {
-            matched = &b;
-            break;
+    if (!head.empty())
+        for (auto& b : branches) {
+            if (b.name == head || b.abbreviation == head) {
+                matched = &b;
+                break;
+            }
         }
-    }
 
     if (this->param && matched == nullptr) {
         for (size_t i = 0; i < split.size(); i++) {
@@ -92,12 +148,10 @@ Branch* Branch::Parse(
         return matched->Parse(split, args);
     }
 
-    // if (split.size() == this->args.size()) {
-    //
-    // }
-    for (size_t i = 0; i < this->args.size(); i++) {
-        args.Set(this->args[i].arg, split[i]);
-    }
+    if (split.size() <= this->args.size())
+        for (size_t i = 0; i < split.size(); i++) {
+            args.Set(this->args[i].arg, split[i]);
+        }
 
     return this;
 }

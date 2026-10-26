@@ -27,6 +27,12 @@ public:
     std::string Get(std::string key);
     bool TryGet(std::string key, std::string& value);
 
+    int GetInt(std::string key);
+    bool TryGetInt(std::string key, int& value);
+
+    bool GetBool(std::string key);
+    bool TryGetBool(std::string key, bool& value);
+
     std::string ParamGet(int index);
     bool TryParamGet(int index, std::string& value);
 
@@ -59,7 +65,9 @@ public:
     Branch(std::string name);
 
     Branch& AddBranch(Branch branch);
+    Branch& AddBranch(std::string name);
     Branch& AddArgument(BranchArgument argument);
+    Branch& AddArgument(std::string name);
     Branch& AddExecution(std::function<std::string(CommandArgument)> execution);
 
     Branch* Parse(std::vector<std::string> split, CommandArgument& args);

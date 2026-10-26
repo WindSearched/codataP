@@ -110,9 +110,10 @@ MainWindow::MainWindow(QWidget* parent)
             t.clear();
         }
 
-        t += ( t.empty() ? "" : " ") + Core::ToString(item->text());
+        t += ( t.empty() ? "" : " ") + Core::ToString(item->text()) + " ";
 
         this->SetInput(t);
+        onTextChanged.Invoke(t);
     });
     //adding selection of suggestion
     onUpDown.Add([this] {

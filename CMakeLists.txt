@@ -7,6 +7,9 @@ set(CMAKE_AUTOMOC  ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network)
+find_package(yaml-cpp REQUIRED)
+
+
 qt_standard_project_setup()
 
 add_executable(codataP main.cpp
@@ -23,21 +26,25 @@ add_executable(codataP main.cpp
         codes/MainWindow.cpp
         codes/MainWindow.h
         codes/classes/TubeCache.h
-        codes/branches/math.h
         utils/SingleInstance.cpp
         utils/SingleInstance.h
         codes/branches/math.cpp
+        codes/branches/math.h
+        codes/Data.cpp
+        codes/Data.h
 )
 
 target_link_libraries(codataP PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets
         Qt${QT_VERSION_MAJOR}::Network
+        yaml-cpp::yaml-cpp
 )
 
 add_subdirectory(CTerminal)
 
 if(WIN32)
-    set_target_properties(Codata PROPERTIES
-            WIN32_EXECUTABLE FALSE
-            LINK_FLAGS "/SUBSYSTEM:CONSOLE")
+    # 只要将 WIN32_EXECUTABLE 设为 FALSE，MinGW 就会默认保留控制台窗口
+    set_target_properties(codataP PROPERTIES WIN32_EXECUTABLE FALSE)
 endif()
+
+

@@ -1,3 +1,4 @@
+#include <fstream>
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
@@ -15,8 +16,21 @@
 #include "codes/Tube.h"
 #include "codes/Branch.h"
 #include "codes/Core.h"
+#include "codes/Data.h"
 #include "codes/MainWindow.h"
+#include "codes/branches/math.h"
 #include "utils/SingleInstance.h"
+
+// === 在这里添加 Windows 特定的头文件引入 ===
+#ifdef Q_OS_WIN
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0501 // 确保启用 GetConsoleWindow (Windows XP 及以上)
+#endif
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 static bool launchedFromTerminal()
 {
 #ifdef Q_OS_WIN
@@ -25,7 +39,69 @@ static bool launchedFromTerminal()
     return isatty(STDIN_FILENO);            // 需 #include <unistd.h>
 #endif
 }
+// 纯本地执行：把 method + args 交给 Core::branch，返回结果字符串
+// 注意：不依赖 MainWindow、不碰 SingleInstance
+QString runLocalCommand(const QString& method, const QStringList& args)
+{
+    try {
+        std::vector<std::string> split;
+        split.push_back(Core::ToString(method));
+        for (const auto& a : args) split.push_back(Core::ToString(a));
+        return Core::ToQString(Core::branch.Command(split));
+    } catch (const std::exception& e) {
+        return QString("error: %1").arg(e.what());
+    }
+}
 
+void registerBranches() {
+    Core::branch
+    .AddBranch(
+        Branch{"test"}
+            .AddExecution(
+                [](CommandArgument args) -> std::string {
+                    return "This is the test branch of Codata program";
+                }
+            )
+    )
+    .AddBranch(
+        Branch{"print"}
+            .AddArgument(BranchArgument{"output"})
+            .AddExecution(
+                [](CommandArgument args) -> std::string {
+                    std::string output;
+                    if (args.TryGet("output", output)) {
+                        return output;
+                    }
+                    return "the argument 'output' is not valid";
+                }
+            )
+    )
+    .AddBranch(math::math_)
+    .AddBranch(Data::branch)
+    ;
+}
+int start(QApplication& app) {
+    Core::OnStart.Add([] {
+        auto& y = Data::sets;
+
+        y["test"] = "hi?";
+    });
+    Core::OnStop.Add([] {
+        std::ofstream fout(Data::setsPath);
+        fout << Data::sets;
+        fout.close();
+    });
+
+    qInfo() << "Before Core::OnStart";
+    std::cerr << "Before Core::OnStart" << std::endl;
+    Core::OnStart.Invoke();
+
+    std::cerr << "Before app.exec()" << std::endl;
+    const int result = app.exec();
+
+    std::cerr << "After app.exec()" << std::endl;
+    Core::OnStop.Invoke();
+}
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
@@ -70,6 +146,36 @@ int main(int argc, char* argv[])
     const QString serverName = "Codata_WS_instance";
 
     SingleInstance instance(serverName);
+
+    // =========================================================
+    // ★ debug：不创建服务器，不碰 IPC
+    //    - 无参数  → 前台打开 MainWindow，app.exec() 常驻
+    //    - 带参数  → 纯本地执行命令，不弹窗，立刻返回
+    // =========================================================
+    if (!arguments.isEmpty() && arguments.first() == "debug") {
+
+        // ---- 情况 1：无参数 → 打开窗口 ----
+        if (arguments.size() == 1) {
+            registerBranches();          // 无 GUI 依赖的分支
+
+            MainWindow mainWindow;
+
+            mainWindow.show();
+            std::cerr << "[CodataP debug] Window shown. Ctrl+C to quit." << std::endl;
+
+            return start(app);               // 常驻，调试完 Ctrl+C
+        }
+
+        // ---- 情况 2：带参数 → 纯本地执行，不开窗 ----
+        const QString method = arguments.at(1);
+        const QStringList args = arguments.mid(2);
+
+        registerBranches();
+
+        const QString r = runLocalCommand(method, args);
+        std::cout << r.toStdString() << std::endl;
+        return 0;                            // 立刻返回，不卡终端
+    }
 
     // =========================================================
     // ① close：请求已有实例退出
@@ -199,28 +305,7 @@ int main(int argc, char* argv[])
     // ---- 初始化命令系统 ----
     static Tube<std::string> tube;
 
-    Core::branch
-        .AddBranch(
-            Branch{"test"}
-                .AddExecution(
-                    [](CommandArgument args) -> std::string {
-                        return "This is the test branch of Codata program";
-                    }
-                )
-        )
-        .AddBranch(
-            Branch{"print"}
-                .AddArgument(BranchArgument{"output"})
-                .AddExecution(
-                    [](CommandArgument args) -> std::string {
-                        std::string output;
-                        if (args.TryGet("output", output)) {
-                            return output;
-                        }
-                        return "the argument 'output' is not valid";
-                    }
-                )
-        );
+    registerBranches();
 
     MainWindow mainWindow;
 
@@ -283,16 +368,6 @@ int main(int argc, char* argv[])
             });
     }
 
-    // ---- 生命周期钩子 + 事件循环 ----
-    qInfo() << "Before Core::OnStart";
-    std::cerr << "Before Core::OnStart" << std::endl;
-    Core::OnStart.Invoke();
-
-    std::cerr << "Before app.exec()" << std::endl;
-    const int result = app.exec();
-
-    std::cerr << "After app.exec()" << std::endl;
-    Core::OnStop.Invoke();
-
+    int result = start(app);
     return result;
 }

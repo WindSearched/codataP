@@ -40,3 +40,7 @@ std::vector<std::string> Core::Split(const std::string &str, char delimiter)
 
     return result;
 }
+
+std::string Core::ToString(int n) {
+    return std::to_string(n);
+}

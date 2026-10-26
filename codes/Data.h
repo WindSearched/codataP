@@ -1,0 +1,30 @@
+//
+// Created by ws on 2026/10/26.
+//
+
+#ifndef CODATAP_DATA_H
+#define CODATAP_DATA_H
+#include <filesystem>
+#include <yaml-cpp/yaml.h>
+
+#include "Branch.h"
+
+
+class Data {
+public:
+    static Branch branch;
+    static std::filesystem::path currentPath;
+    static std::filesystem::path setsPath;
+    static YAML::Node sets ;
+
+    static std::filesystem::path ToPath(std::string path);
+    static bool IsFile(std::filesystem::path path);
+    static bool IsDirectory(std::filesystem::path path);
+
+    static std::string Read(std::filesystem::path path);
+    static bool Write(std::filesystem::path path, std::string data);
+    static bool OpenTextDefault(std::filesystem::path);
+};
+
+
+#endif //CODATAP_DATA_H
