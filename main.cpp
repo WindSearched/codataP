@@ -80,12 +80,29 @@ void registerBranches() {
     .AddBranch(Data::branch)
     ;
 }
-int start(QApplication& app) {
-    Core::OnStart.Add([] {
-        auto& y = Data::sets;
+int start(QApplication& app, MainWindow& window) {
 
-        y["test"] = "hi?";
+    //try load tube cache
+    Core::OnStart.Add([&window] {
+        auto save = Data::sets["saveTube"];
+        if (!save) return;
+
+        auto cache = Data::sets["tubeCache"];
+        if (!cache) return;
+
+        auto& t = window.tubeCache;
+        const auto list = cache.as<std::vector<std::string>>();
+
+        t.Put(list);
     });
+    Core::OnStop.Add([&window] {
+        auto save = Data::sets["saveTube"];
+        if (!save) return;
+
+        Data::sets["tubeCache"] = window.tubeCache.tube.tube;
+    });
+
+    //close yaml
     Core::OnStop.Add([] {
         std::ofstream fout(Data::setsPath);
         fout << Data::sets;
@@ -163,7 +180,7 @@ int main(int argc, char* argv[])
             mainWindow.show();
             std::cerr << "[CodataP debug] Window shown. Ctrl+C to quit." << std::endl;
 
-            return start(app);               // 常驻，调试完 Ctrl+C
+            return start(app, mainWindow);               // 常驻，调试完 Ctrl+C
         }
 
         // ---- 情况 2：带参数 → 纯本地执行，不开窗 ----
@@ -368,6 +385,6 @@ int main(int argc, char* argv[])
             });
     }
 
-    int result = start(app);
+    int result = start(app, mainWindow);
     return result;
 }

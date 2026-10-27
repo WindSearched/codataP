@@ -9,12 +9,12 @@
 template<typename T>
 class Tube {
 private:
-    std::vector<T> tube;
     int count = 0;
     int cast(int i) {
         return i % tube.size();
     }
 public:
+    std::vector<T> tube;
     int pointer = -1;//always last putted variable index
 
     Tube(){}

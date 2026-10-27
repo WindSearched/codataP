@@ -45,6 +45,8 @@ class MainWindow : public QWidget
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
+    TubeCache<std::string> tubeCache;
+
 public slots:
     void showAndActivate();
 
@@ -59,8 +61,6 @@ private:
     SEvent<std::string> onTextChanged;
     SEvent<> onEnterDown, onTabDown,
         onRightDown, onLeftDown, onUpDown, onDownDown;
-
-    TubeCache<std::string> tubeCache;
 
     ///if the shift key is pressed
     bool shift_ = false;

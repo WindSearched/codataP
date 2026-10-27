@@ -14,7 +14,6 @@ public:
     T front;
     int pointer = 0;
 
-    // ─── 成员函数声明 ───
     T MoveFront();
     T MoveBack();
     T MoveTo(int index);
@@ -22,6 +21,7 @@ public:
 
     void New(int length);
     void Put(T item);
+    void Put(std::vector<T> items);
     void PutFront(T item);
 };
 
@@ -82,6 +82,14 @@ void TubeCache<T>::New(int length) {
 template<typename T>
 void TubeCache<T>::Put(T item) {
     tube.Put(item);
+}
+
+template<typename T>
+void TubeCache<T>::Put(std::vector<T> items) {
+    for (auto item : items) {
+        if (item == T{}) continue;
+        tube.Put(item);
+    }
 }
 
 template<typename T>
