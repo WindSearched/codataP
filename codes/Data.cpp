@@ -7,6 +7,7 @@
 #include <fstream>
 
 #include "Core.h"
+#include "Sets.h"
 
 namespace fs = std::filesystem;
 using string = std::string;
@@ -65,10 +66,10 @@ Branch Data::setsBranch = Branch("sets")
             bool a;
 
             if (args.TryGetBool("arg", a)) {
-                Data::sets["saveTube"] = a;
+                Sets::sets["saveTube"] = a;
                 return "Set " + Core::ToString(a) + " " + (a ? "success" : "failure");
             }
-            auto n = Data::sets["saveTube"];
+            auto n = Sets::sets["saveTube"];
             if (n)
                 n = n;
             return n && n.as<bool>() ? "state: True" : "State: False";
@@ -78,7 +79,6 @@ Branch Data::setsBranch = Branch("sets")
 
 std::filesystem::path Data::currentPath = fs::current_path();
 std::filesystem::path Data::setsPath = currentPath / "sets.yml";
-YAML::Node Data::sets = IsFile(setsPath) ? YAML::LoadFile(setsPath) : YAML::Node();
 
 std::filesystem::path Data::ToPath(std::string path) {
     return fs::path(path);
@@ -90,6 +90,10 @@ bool Data::IsFile(std::filesystem::path path) {
 
 bool Data::IsDirectory(std::filesystem::path path) {
     return fs::is_directory(path);
+}
+
+std::filesystem::path Data::GetProximatePath(std::filesystem::path path) {
+    return fs::proximate(path);
 }
 
 std::string Data::Read(std::filesystem::path path) {

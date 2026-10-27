@@ -7,7 +7,15 @@
 #include <qstring.h>
 #include <sstream>
 
-Branch Core::branch ("codata");
+Branch Core::branch = Branch ("codata")
+    .AddBranch(Branch("exit")
+        .AddExecution([](const CommandArgument&) -> std::string {
+            QApplication::quit();
+            return "exit";
+        })
+        )
+;
+
 SEvent<> Core::OnStart;
 SEvent<> Core::OnStop;
 

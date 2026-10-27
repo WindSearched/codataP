@@ -32,6 +32,8 @@ add_executable(codataP main.cpp
         codes/branches/math.h
         codes/Data.cpp
         codes/Data.h
+        codes/Sets.cpp
+        codes/Sets.h
 )
 
 target_link_libraries(codataP PRIVATE

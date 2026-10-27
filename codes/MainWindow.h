@@ -46,7 +46,11 @@ class MainWindow : public QWidget
 public:
     explicit MainWindow(QWidget* parent = nullptr);
     TubeCache<std::string> tubeCache;
-
+    void LogLine(std::string log);
+    void LogLineHead();
+    bool HasLineHeadInLastLine();
+    void RemoveLastLine();
+    void RemoveLineHeadWeatherExists();
 public slots:
     void showAndActivate();
 
@@ -66,7 +70,6 @@ private:
     bool shift_ = false;
 
     void ToCommand();
-    void LogLine(std::string log);
     void SetInput(std::string input);
     void AppendInput(std::string text);
     std::string GetInput();

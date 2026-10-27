@@ -18,6 +18,7 @@
 #include "codes/Core.h"
 #include "codes/Data.h"
 #include "codes/MainWindow.h"
+#include "codes/Sets.h"
 #include "codes/branches/math.h"
 #include "utils/SingleInstance.h"
 
@@ -85,10 +86,10 @@ int start(QApplication& app, MainWindow& window) {
 
     //try load tube cache
     Core::OnStart.Add([&window] {
-        auto save = Data::sets["saveTube"];
+        auto save = Sets::sets["saveTube"];
         if (!save) return;
 
-        auto cache = Data::sets["tubeCache"];
+        auto cache = Sets::sets["tubeCache"];
         if (!cache) return;
 
         auto& t = window.tubeCache;
@@ -97,16 +98,16 @@ int start(QApplication& app, MainWindow& window) {
         t.Put(list);
     });
     Core::OnStop.Add([&window] {
-        auto save = Data::sets["saveTube"];
+        auto save = Sets::sets["saveTube"];
         if (!save) return;
 
-        Data::sets["tubeCache"] = window.tubeCache.tube.Gets();
+        Sets::sets["tubeCache"] = window.tubeCache.tube.Gets();
     });
 
     //close yaml
     Core::OnStop.Add([] {
         std::ofstream fout(Data::setsPath);
-        fout << Data::sets;
+        fout << Sets::sets;
         fout.close();
     });
 
@@ -179,6 +180,7 @@ int main(int argc, char* argv[])
             registerBranches();          // 无 GUI 依赖的分支
 
             MainWindow mainWindow;
+            mainWindow.LogLineHead();
 
             mainWindow.show();
             std::cerr << "[CodataP debug] Window shown. Ctrl+C to quit." << std::endl;
@@ -328,6 +330,7 @@ int main(int argc, char* argv[])
     registerBranches();
 
     MainWindow mainWindow;
+    mainWindow.LogLineHead();
 
     // ---- exec 分派：命令树即白名单 ----
     auto dispatchExec = [](const QString& method,

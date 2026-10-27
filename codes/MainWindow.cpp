@@ -14,6 +14,7 @@
 #include <ranges>
 
 #include "Core.h"
+#include "Sets.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QWidget(parent)
@@ -40,9 +41,13 @@ MainWindow::MainWindow(QWidget* parent)
         auto text = this->GetInput();
         auto split = Core::Split(text, ' ');
 
-        this -> LogLine(Core::branch.Command(split)) ;
+        std::string put = text + "\n"
+            + Core::branch.Command(split);
+        this -> LogLine(put);
 
         input->clear();
+
+        LogLineHead();
     });
     // command cache
     onUpDown.Add([this] {
@@ -218,9 +223,45 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
 
         return QWidget::eventFilter(obj, event);
     }
+    return false;
 }
 void MainWindow::LogLine(std::string logged) {
-    log->appendPlainText(Core::ToQString(logged));
+    auto l = Core::ToQString(logged);
+
+    if (HasLineHeadInLastLine()) {
+        log->moveCursor(QTextCursor::End);
+        log->insertPlainText(l);
+        return;
+    }
+
+    log->appendPlainText(l);
+}
+
+void MainWindow::LogLineHead() {
+    LogLine(Sets::GetLineHead());
+}
+
+bool MainWindow::HasLineHeadInLastLine() {
+    auto s = log->toPlainText();
+    if (!s.isEmpty()) {
+        auto last = s.back();
+        if (last == '>') {
+            return true;
+        }
+    }
+    return false;
+}
+
+void MainWindow::RemoveLastLine() {
+    QTextCursor cursor = log->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    cursor.select(QTextCursor::LineUnderCursor);
+    cursor.removeSelectedText();
+}
+
+void MainWindow::RemoveLineHeadWeatherExists() {
+    if (HasLineHeadInLastLine())
+        RemoveLastLine();
 }
 
 void MainWindow::AppendInput(std::string text) {

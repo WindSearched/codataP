@@ -4,6 +4,7 @@
 
 #ifndef CODATAP_CORE_H
 #define CODATAP_CORE_H
+#include <QApplication>
 #include <qstring.h>
 
 #include "Branch.h"
