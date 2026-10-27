@@ -6,6 +6,8 @@
 
 #include <fstream>
 
+#include "Core.h"
+
 namespace fs = std::filesystem;
 using string = std::string;
 
@@ -55,6 +57,23 @@ Branch Data::branch = Branch("data")
 
             return b ? "Success" : "Failure";
         }))
+;
+Branch Data::setsBranch = Branch("sets")
+    .AddBranch(Branch("saveTube")
+        .AddArgument("arg")
+        .AddExecution([](CommandArgument args) -> string {
+            bool a;
+
+            if (args.TryGetBool("arg", a)) {
+                Data::sets["saveTube"] = a;
+                return "Set " + Core::ToString(a) + " " + (a ? "success" : "failure");
+            }
+            auto n = Data::sets["saveTube"];
+            if (n)
+                n = n;
+            return n && n.as<bool>() ? "state: True" : "State: False";
+        })
+        )
 ;
 
 std::filesystem::path Data::currentPath = fs::current_path();

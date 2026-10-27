@@ -13,6 +13,7 @@
 class Data {
 public:
     static Branch branch;
+    static Branch setsBranch;
     static std::filesystem::path currentPath;
     static std::filesystem::path setsPath;
     static YAML::Node sets ;

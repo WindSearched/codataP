@@ -20,6 +20,7 @@ class Core {
     static std::string ToString(QString text);
     static  std::vector<std::string> Split(const std::string& str, char delimiter);
     static std::string ToString(int n);
+    static std::string ToString(bool n);
 };
 
 

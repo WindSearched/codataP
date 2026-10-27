@@ -44,3 +44,7 @@ std::vector<std::string> Core::Split(const std::string &str, char delimiter)
 std::string Core::ToString(int n) {
     return std::to_string(n);
 }
+
+std::string Core::ToString(bool n) {
+    return n ? "true" : "false";
+}

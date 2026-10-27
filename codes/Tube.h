@@ -9,12 +9,12 @@
 template<typename T>
 class Tube {
 private:
+    std::vector<T> tube;
     int count = 0;
     int cast(int i) {
         return i % tube.size();
     }
 public:
-    std::vector<T> tube;
     int pointer = -1;//always last putted variable index
 
     Tube(){}
@@ -58,7 +58,21 @@ public:
     int size() {
         return tube.size();
     }
+
+    std::vector<T> Gets();
 };
+
+template<typename T>
+std::vector<T> Tube<T>::Gets() {
+    std::vector<T> l;
+    for (int i = pointer + 1; i < tube.size(); i++) {
+        l.push_back(tube[i]);
+    }
+    for (int i = 0; i < pointer + 1; i++) {
+        l.push_back(tube[i]);
+    }
+    return l;
+}
 
 
 #endif //CODATAP_TUBE_H

@@ -78,6 +78,7 @@ void registerBranches() {
     )
     .AddBranch(math::math_)
     .AddBranch(Data::branch)
+    .AddBranch(Data::setsBranch)
     ;
 }
 int start(QApplication& app, MainWindow& window) {
@@ -99,7 +100,7 @@ int start(QApplication& app, MainWindow& window) {
         auto save = Data::sets["saveTube"];
         if (!save) return;
 
-        Data::sets["tubeCache"] = window.tubeCache.tube.tube;
+        Data::sets["tubeCache"] = window.tubeCache.tube.Gets();
     });
 
     //close yaml
@@ -118,6 +119,8 @@ int start(QApplication& app, MainWindow& window) {
 
     std::cerr << "After app.exec()" << std::endl;
     Core::OnStop.Invoke();
+
+    return result;
 }
 int main(int argc, char* argv[])
 {

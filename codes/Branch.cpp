@@ -64,7 +64,8 @@ bool CommandArgument::GetBool(std::string key) {
 }
 
 bool CommandArgument::TryGetBool(std::string key, bool &value) {
-    string s = Get(key);
+    string s;
+    if (!TryGet(key, s)) return false;
     if (s == "true" || s == "1" || s == "y") {
         value = true;
         return true;
@@ -161,7 +162,7 @@ Branch* Branch::Parse(
         return matched->Parse(split, args);
     }
 
-    if (split.size() <= this->args.size())
+    if (split.size() - (split.back().empty() ? 1 : 0) <= this->args.size())
         for (size_t i = 0; i < split.size(); i++) {
             args.Set(this->args[i].arg, split[i]);
         }
