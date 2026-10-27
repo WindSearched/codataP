@@ -34,6 +34,8 @@ add_executable(codataP main.cpp
         codes/Data.h
         codes/Sets.cpp
         codes/Sets.h
+        codes/classes/Result.cpp
+        codes/classes/Result.h
 )
 
 target_link_libraries(codataP PRIVATE
