@@ -7,11 +7,24 @@
 #include <qstring.h>
 #include <sstream>
 
+#include "Sets.h"
+
+using string = std::string;
+
 Branch Core::branch = Branch ("codata")
     .AddBranch(Branch("exit")
         .AddExecution([](const CommandArgument&) -> std::string {
             QApplication::quit();
             return "exit";
+            })
+        )
+    .AddBranch(Branch("user")
+        .AddArgument("name")
+        .AddExecution([](CommandArgument a)-> string {
+            string name;
+            if (!a.TryGet("name", name))  return "The argument name is not exists";
+            Sets::SetUser(name);
+            return "Success";
         })
         )
 ;
