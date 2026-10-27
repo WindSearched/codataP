@@ -36,6 +36,8 @@ public:
     std::string ParamGet(int index);
     bool TryParamGet(int index, std::string& value);
 
+    std::vector<std::string> GetList();
+
     void Set(std::string key, std::string value);
     std::vector<std::string> GetArgs() {
         std::vector<std::string> o;
@@ -69,6 +71,7 @@ public:
     Branch& AddArgument(BranchArgument argument);
     Branch& AddArgument(std::string name);
     Branch& AddExecution(std::function<std::string(CommandArgument)> execution);
+    Branch& SetParam();
 
     Branch* Parse(std::vector<std::string> split, CommandArgument& args);
 

@@ -84,6 +84,14 @@ bool CommandArgument::TryParamGet(int index, std::string& value) {
     return TryGet("param" + std::to_string(index), value);
 }
 
+std::vector<std::string> CommandArgument::GetList() {
+    std::vector<string> l ;
+    for (const auto& i : args) {
+        l.push_back(i.second);
+    }
+    return l;
+}
+
 void CommandArgument::Set(std::string key, std::string value) {
     args[key] = value;
 }
@@ -116,6 +124,11 @@ Branch& Branch::AddExecution(
     return *this;
 }
 
+Branch & Branch::SetParam() {
+    param = true;
+    return *this;
+}
+
 Branch* Branch::Parse(
     std::vector<std::string> split,
     CommandArgument& args) {
@@ -138,7 +151,7 @@ Branch* Branch::Parse(
 
     if (this->param && matched == nullptr) {
         for (size_t i = 0; i < split.size(); i++) {
-            args.Set("param" + std::to_string(i), split[i]);
+            args.Set("param" + std::to_string(i+1), split[i]);
         }
 
         return this;

@@ -62,6 +62,7 @@ MainWindow::MainWindow(QWidget* parent)
     onTextChanged.Add([this](std::string text) {
         auto s = Core::Split(text, ' ');
         auto last = s.empty() ? "" : s.back();
+        s.pop_back();
         CommandArgument args;
         auto* branch = Core::branch.Parse(s, args);
 
@@ -71,16 +72,16 @@ MainWindow::MainWindow(QWidget* parent)
                   return b.name;
               });
 
-        auto l2 = branch->args
-            | std::views::transform([](const BranchArgument& a) {
-                  return a.arg;
-              });
+        // auto l2 = branch->args
+        //     | std::views::transform([](const BranchArgument& a) {
+        //           return a.arg;
+        //       });
 
         // 合并到同一个 vector
         std::vector<std::string> result;
 
         std::ranges::copy(l1, std::back_inserter(result));
-        std::ranges::copy(l2, std::back_inserter(result));
+        //std::ranges::copy(l2, std::back_inserter(result));
 
         // 剔除满足条件的元素：示例为删除空字符串
         std::erase_if(result, [last](const std::string& s) {
@@ -89,10 +90,13 @@ MainWindow::MainWindow(QWidget* parent)
 
         //set to listbox
         SetList(result);
-        auto a = s | std::views::drop(args.Count()) | std::views::take(s.size());
-        std::vector<std::string> l;
-        std::ranges::copy(a, std::back_inserter(l));
-        SetInputSuggestion(branch, l, result.size());
+        // auto a = s
+        // | std::views::drop(s.size() - branch->args.size() + args.Count())
+        // | std::views::take(s.size());
+        // std::vector<std::string> l;
+        // std::ranges::copy(a, std::back_inserter(l));
+
+        SetInputSuggestion(branch, args.GetList(), result.size(), last);
     });
     //add setting of suggestion
     onTabDown.Add([this] {
@@ -254,14 +258,12 @@ void MainWindow::onButtonClicked()
     input->clear();
 }
 
-void MainWindow::SetInputSuggestion(Branch* node, std::vector<std::string> args, int listCount) {
+void MainWindow::SetInputSuggestion(Branch* node, std::vector<std::string> args, int listCount, std::string last) {
     std::string sug = "";
     auto add =  [&sug](std::string t) {
         sug += sug == "" ? t : "/" + t;
     };
 
-    auto last = args.size() > 0 ? args.back() : "";
-    args.pop_back();//remove the last
     bool branchnotfound = !last.empty() && listCount == 0;
     int count = args.size();
     bool brancharg = node->args.size() >0;
