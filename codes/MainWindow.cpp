@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget* parent)
     : QWidget(parent)
 {
     tubeCache.New(10);
+    argsCache.New(10);
 
     initUI();
     auto *central = new QWidget(this);
@@ -66,6 +67,7 @@ MainWindow::MainWindow(QWidget* parent)
         }
     });
     //add the suggestion
+    //tg_suggestion_set
     onTextChanged.Add([this](std::string text) {
         auto s = Core::Split(text, ' ');
         auto last = s.empty() ? "" : s.back();
@@ -122,7 +124,7 @@ MainWindow::MainWindow(QWidget* parent)
 
         t += ( t.empty() ? "" : " ") + Core::ToString(item->text()) + " ";
 
-        this->SetInput(t);
+        this->SetInput(t, false);
         onTextChanged.Invoke(t);
     });
     //adding selection of suggestion
@@ -151,6 +153,41 @@ MainWindow::MainWindow(QWidget* parent)
                 row = 0;
         }
         list->setCurrentRow(row);
+    });
+
+    onLeftDown.Add([this] {
+        if (!shift_) return;
+
+        string t = GetInput();
+        bool backSpace = false;
+        if (t.back() == ' ') {
+            t.pop_back();//remove the last
+            backSpace = true;
+        }
+
+        auto p = t.rfind(' ');
+        if (p != std::string::npos) {
+            string cache, put;
+            put = t.substr(0, p + 1);
+            cache = t.substr(p + 1);
+            SetInput(put, true);
+            if (backSpace) cache += ' ' ;
+            argsCache.Put(cache);
+        }
+        else {
+            SetInput("", true);
+            argsCache.Put(t);
+        }
+        argsCache.Revert();
+    });
+    onRightDown.Add([this] {
+        if (!shift_) return;
+
+        string t = GetInput();
+        string c = argsCache.MoveBack();
+        if (c.empty()) return;
+
+        AppendInput((t.back() == ' ' || c.front() == ' ' ? "" : " ") + c, true);
     });
 
     connect(input, &QLineEdit::textEdited, this,
@@ -267,15 +304,28 @@ void MainWindow::RemoveLineHeadWeatherExists() {
         RemoveLastLine();
 }
 
-void MainWindow::AppendInput(std::string text) {
+void MainWindow::AppendInput(std::string text, bool update) {
     auto v = Core::ToQString(text);
     input->setText(input->text() + v);
+    if (update)
+        onTextChanged.Invoke(GetInput());
+}
+
+void MainWindow::AppendInput(std::string text) {
+    AppendInput(text, false);
+}
+
+void MainWindow::SetInput(std::string text, bool update) {
+    auto v = Core::ToQString(text);
+    input->setText(v);
+    if (update)
+        onTextChanged.Invoke(text);
 }
 
 void MainWindow::SetInput(std::string text) {
-    auto v = Core::ToQString(text);
-    input->setText(v);
+    SetInput(text, false);
 }
+
 std::string MainWindow::GetInput() {
     return Core::ToString(input->text());
 }

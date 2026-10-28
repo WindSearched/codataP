@@ -46,6 +46,8 @@ class MainWindow : public QWidget
 public:
     explicit MainWindow(QWidget* parent = nullptr);
     TubeCache<std::string> tubeCache;
+    TubeCache<std::string> argsCache;//cache the removed args or branches
+
     void LogLine(std::string log);
     void LogLineHead();
     bool HasLineHeadInLastLine();
@@ -69,8 +71,9 @@ private:
     ///if the shift key is pressed
     bool shift_ = false;
 
-    void ToCommand();
-    void SetInput(std::string input);
+    void SetInput(std::string text, bool update);
+    void SetInput(std::string text);
+    void AppendInput(std::string text, bool update);
     void AppendInput(std::string text);
     std::string GetInput();
     void SetList(std::vector<std::string> elements);
