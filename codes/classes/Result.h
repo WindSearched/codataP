@@ -5,6 +5,9 @@
 #ifndef CODATAP_RESULT_H
 #define CODATAP_RESULT_H
 #include <string>
+#include <vector>
+
+#include "../Sets.h"
 
 
 struct Result {
@@ -15,8 +18,9 @@ struct Result {
     Result(bool success, std::string output);
 
     static Result isSuccess, isFailed;
-    static std::string argNotExists(std::string arg);
+    static std::string argNotExists(const std::string& arg);
 };
+
 
 
 #endif //CODATAP_RESULT_H

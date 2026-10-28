@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget* parent)
     });
     // command cache
     onUpDown.Add([this] {
+        if (!shift_) return;
         if (tubeCache.pointer == 0)
             tubeCache.PutFront(this->GetInput());
         auto t = tubeCache.MoveBack();
@@ -59,6 +60,7 @@ MainWindow::MainWindow(QWidget* parent)
     });
     // command cache
     onDownDown.Add([this] {
+        if (!shift_) return;
         if (tubeCache.pointer != 0) {
             SetInput(tubeCache.MoveFront());
         }
@@ -77,16 +79,15 @@ MainWindow::MainWindow(QWidget* parent)
                   return b.name;
               });
 
-        // auto l2 = branch->args
-        //     | std::views::transform([](const BranchArgument& a) {
-        //           return a.arg;
-        //       });
+
 
         // 合并到同一个 vector
         std::vector<std::string> result;
-
         std::ranges::copy(l1, std::back_inserter(result));
-        //std::ranges::copy(l2, std::back_inserter(result));
+        if (!branch->args.empty() && args.Count() < branch->args.size()) {
+            auto l2 = branch->args[args.Count()].GetSuggestion(last);
+            std::ranges::copy(l2, std::back_inserter(result));
+        }
 
         // 剔除满足条件的元素：示例为删除空字符串
         std::erase_if(result, [last](const std::string& s) {
@@ -126,6 +127,7 @@ MainWindow::MainWindow(QWidget* parent)
     });
     //adding selection of suggestion
     onUpDown.Add([this] {
+        if (shift_) return;
         int row = list->currentRow();
         if (row == -1) {
             row = 0;
@@ -138,6 +140,7 @@ MainWindow::MainWindow(QWidget* parent)
         list->setCurrentRow(row);
     });
     onDownDown.Add([this] {
+        if (shift_) return;
         int row = list->currentRow();
         if (row == -1) {
             row = 0;

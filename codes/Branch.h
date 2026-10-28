@@ -10,14 +10,21 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Sets.h"
+
 class BranchArgument {
 public:
     std::string arg;
-    std::function<std::string()> suggestion;
+    std::function<std::vector<std::string>(std::string currentArg)> suggestion;
 
     BranchArgument(std::string arg);
 
-    BranchArgument& SetSuggestion(std::function<std::string()> suggestion);
+    BranchArgument& SetSuggestion(std::function<std::vector<string>(string)> suggestion);
+    std::vector<std::string> GetSuggestion(std::string put);
+
+    static BranchArgument boolean(string name);
+private:
+
 };
 
 class CommandArgument {

@@ -14,9 +14,26 @@ BranchArgument::BranchArgument(std::string arg)
 }
 
 BranchArgument& BranchArgument::SetSuggestion(
-    std::function<std::string()> suggestion) {
+    std::function<std::vector<string>(string)> suggestion) {
     this->suggestion = suggestion;
     return *this;
+}
+
+std::vector<string> BranchArgument::GetSuggestion(std::string put) {
+    if (suggestion) {
+        return suggestion(put);
+    }
+    else {
+        return std::vector<string>();
+    }
+    return !suggestion ? std::vector<string>() : suggestion(put);
+}
+
+BranchArgument BranchArgument::boolean(string name) {
+    BranchArgument b(name);
+    b.suggestion = [](string put) -> std::vector<string> {return {"true","false"};};
+
+    return b;
 }
 
 std::string CommandArgument::Get(std::string key) {

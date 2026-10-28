@@ -61,7 +61,7 @@ Branch Data::branch = Branch("data")
 ;
 Branch Data::setsBranch = Branch("sets")
     .AddBranch(Branch("saveTube")
-        .AddArgument("arg")
+        .AddArgument(BranchArgument::boolean("arg"))
         .AddExecution([](CommandArgument args) -> string {
             bool a;
 
