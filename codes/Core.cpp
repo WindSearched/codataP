@@ -32,6 +32,8 @@ Branch Core::branch = Branch ("codata")
 SEvent<> Core::OnStart;
 SEvent<> Core::OnStop;
 
+MainWindow* Core::mainWindow = nullptr;
+
 QString Core::ToQString(std::string text) {
     QString qtext = QString::fromUtf8(
         text.data(),

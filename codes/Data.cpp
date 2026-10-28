@@ -79,6 +79,7 @@ Branch Data::setsBranch = Branch("sets")
 
 std::filesystem::path Data::currentPath = fs::current_path();
 std::filesystem::path Data::setsPath = currentPath / "sets.yml";
+std::filesystem::path Data::pluginsPath = currentPath / "plugins";
 
 std::filesystem::path Data::ToPath(std::string path) {
     return fs::path(path);
@@ -117,6 +118,10 @@ bool Data::Write(std::filesystem::path path, std::string data) {
     file << data;
 
     return true;
+}
+
+void Data::CreateDirectory(std::filesystem::path path) {
+    fs::create_directories(path);
 }
 
 bool Data::OpenTextDefault(std::filesystem::path path) {

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.3)
-project(codataP)
+project(Codata)
 
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -12,13 +12,13 @@ find_package(yaml-cpp REQUIRED)
 
 qt_standard_project_setup()
 
-add_executable(codataP main.cpp
+add_executable(Codata main.cpp
         codes/Tube.cpp
         codes/Tube.h
         codes/Event.cpp
         codes/Event.h
-        codes/Branch.cpp
-        codes/Branch.h
+        CdPlugin/codes/Branch.cpp
+        CdPlugin/codes/Branch.h
         codes/Core.cpp
         codes/Core.h
         codes/SEvent.cpp
@@ -36,19 +36,29 @@ add_executable(codataP main.cpp
         codes/Sets.h
         codes/classes/Result.cpp
         codes/classes/Result.h
+        CdPlugin/CdaPI.cpp
+        CdPlugin/CdaPI.h
+        utils/PluginInstance.cpp
+        utils/PluginInstance.h
+        CdPlugin/codes/YmlManager.cpp
+        CdPlugin/codes/YmlManager.h
+        codes/classes/PluginLoader.cpp
+        codes/classes/PluginLoader.h
+        codes/classes/SType.h
+        CdPlugin/Center.cpp
 )
 
-target_link_libraries(codataP PRIVATE
+target_link_libraries(Codata PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets
         Qt${QT_VERSION_MAJOR}::Network
         yaml-cpp::yaml-cpp
 )
 
-add_subdirectory(CTerminal)
+add_subdirectory(CdPlugin)
 
 if(WIN32)
     # 只要将 WIN32_EXECUTABLE 设为 FALSE，MinGW 就会默认保留控制台窗口
-    set_target_properties(codataP PROPERTIES WIN32_EXECUTABLE FALSE)
+    set_target_properties(Codata PROPERTIES WIN32_EXECUTABLE FALSE)
 endif()
 
 

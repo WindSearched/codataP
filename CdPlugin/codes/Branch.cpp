@@ -2,7 +2,7 @@
 // Created by ws on 2026/10/12.
 //
 
-#include "Branch.h"
+#include "../codes/Branch.h"
 
 #include <limits>
 #include <stdexcept>
@@ -119,6 +119,12 @@ Branch::Branch(std::string name)
 }
 
 Branch& Branch::AddBranch(Branch branch) {
+    // for (auto& b : branches) {
+    //     if (b.name == branch.name) {
+    //         return *this;
+    //     }
+    // }
+
     branches.push_back(branch);
     return *this;
 }
