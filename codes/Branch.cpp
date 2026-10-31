@@ -123,8 +123,18 @@ Branch& Branch::AddBranch(Branch branch) {
     return *this;
 }
 
+Branch * Branch::AddBranchReturnSelf(Branch branch) {
+    branches.push_back(branch);
+
+    return &branches.back();
+}
+
 Branch & Branch::AddBranch(std::string name) {
     return AddBranch(Branch(name));
+}
+
+Branch * Branch::AddBranchReturnSelf(std::string name) {
+    return AddBranchReturnSelf(Branch(name));
 }
 
 Branch& Branch::AddArgument(BranchArgument argument) {

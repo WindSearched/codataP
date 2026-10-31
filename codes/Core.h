@@ -10,12 +10,14 @@
 #include "Branch.h"
 #include "Event.h"
 #include "SEvent.h"
+#include "classes/BranchBuilder.h"
 
 
 class Core {
     public:
     static Branch branch; // root of commands
     static SEvent<> OnStart, OnStop;
+    static BranchBuilder branchBuilder;
 
     static QString ToQString(std::string text);
     static std::string ToString(QString text);

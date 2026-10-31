@@ -74,7 +74,9 @@ public:
     Branch(std::string name);
 
     Branch& AddBranch(Branch branch);
+    Branch* AddBranchReturnSelf(Branch branch);
     Branch& AddBranch(std::string name);
+    Branch* AddBranchReturnSelf(std::string name);
     Branch& AddArgument(BranchArgument argument);
     Branch& AddArgument(std::string name);
     Branch& AddExecution(std::function<std::string(CommandArgument)> execution);

@@ -28,6 +28,7 @@ Branch Core::branch = Branch ("codata")
         })
         )
 ;
+BranchBuilder Core::branchBuilder = BranchBuilder();
 
 SEvent<> Core::OnStart;
 SEvent<> Core::OnStop;

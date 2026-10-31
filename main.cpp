@@ -111,6 +111,17 @@ int start(QApplication& app, MainWindow& window) {
         fout.close();
     });
 
+    auto& bb = Core::branchBuilder;
+    bb.InsertBranch("builderTest");
+    bb.AddArgument("arg");
+    bb.AddExecute([](CommandArgument args) -> string {
+        string a;
+        if (!args.TryGet("arg", a)) return "Error";
+        return "Builder testing " + a;
+    });
+    auto b = bb.Build();
+    Core::branch.AddBranch(b);
+
     qInfo() << "Before Core::OnStart";
     std::cerr << "Before Core::OnStart" << std::endl;
     Core::OnStart.Invoke();

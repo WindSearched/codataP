@@ -36,6 +36,8 @@ add_executable(codataP main.cpp
         codes/Sets.h
         codes/classes/Result.cpp
         codes/classes/Result.h
+        codes/classes/BranchBuilder.cpp
+        codes/classes/BranchBuilder.h
 )
 
 target_link_libraries(codataP PRIVATE
@@ -43,8 +45,6 @@ target_link_libraries(codataP PRIVATE
         Qt${QT_VERSION_MAJOR}::Network
         yaml-cpp::yaml-cpp
 )
-
-add_subdirectory(CTerminal)
 
 if(WIN32)
     # 只要将 WIN32_EXECUTABLE 设为 FALSE，MinGW 就会默认保留控制台窗口
