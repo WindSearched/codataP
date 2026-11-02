@@ -25,6 +25,7 @@ public:
     static std::string Read(std::filesystem::path path);
     static bool Write(std::filesystem::path path, std::string data);
     static bool OpenTextDefault(std::filesystem::path);
+    static std::string ExecuteCCommand(std::string command);
 };
 
 

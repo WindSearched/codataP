@@ -63,6 +63,12 @@ void registerBranches() {
                     return "This is the test branch of Codata program";
                 }
             )
+            .AddBranch(Branch("branchString")
+                .AddExecution([](CommandArgument)-> string {
+                    string t = Branch::ToString(Core::branch);
+                    return t;
+                })
+                )
     )
     .AddBranch(
         Branch{"print"}

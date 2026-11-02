@@ -16,14 +16,14 @@ public:
 
     BranchBuilder();
 
-    bool MovePointer(string to);
+    bool MovePointer(std::string to);
     bool MovePointer(int index);
 
-    void InsertBranch(string branch, bool movePointer = true);
+    void InsertBranch(std::string branch, bool movePointer = true);
     bool Back();
 
-    void AddArgument(string arg);
-    void AddExecute(std::function<string(CommandArgument)> func);
+    void AddArgument(std::string arg);
+    void AddExecute(std::function<std::string(CommandArgument)> func);
 
     Branch Build();
     void Clear();

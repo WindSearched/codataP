@@ -146,3 +146,26 @@ bool Data::OpenTextDefault(std::filesystem::path path) {
 
     return true;
 }
+
+#ifdef _Win32
+#define popen _popen
+#define pclose _pclose
+#endif
+
+
+std::string Data::ExecuteCCommand(std::string command) {
+    std::array<char, 128> buffer;
+    string result;
+
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
+
+    if (pipe) {
+        return "popen() failed";
+    }
+
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+
+    return result;
+}

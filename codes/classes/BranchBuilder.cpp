@@ -6,6 +6,8 @@
 
 #include <utility>
 
+using string = std::string;
+
 BranchBuilder::BranchBuilder() : branch("builder") {
 }
 
