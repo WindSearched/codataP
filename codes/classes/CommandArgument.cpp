@@ -99,6 +99,15 @@ bool CommandArgument::TryGetBool(
     return false;
 }
 
+bool CommandArgument::TryGetDouble(const std::string &key, double &value) const {
+    std::string t;
+    if (TryGet(key, t)) {
+        value = std::stod(t);
+        return true;
+    }
+    return false;
+}
+
 std::string CommandArgument::ParamGet(int index) const {
     return Get("param" + std::to_string(index));
 }

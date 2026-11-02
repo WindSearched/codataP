@@ -7,7 +7,7 @@
 #include <QApplication>
 #include <qstring.h>
 
-#include "../CdPlugin/codes/Branch.h"
+#include "Branch.h"
 #include "Event.h"
 #include "MainWindow.h"
 #include "SEvent.h"
@@ -21,12 +21,13 @@ class Core {
     static BranchBuilder branchBuilder;
     static MainWindow* mainWindow;
 
-    static MainWindow* mainWindow;
-
     static QString ToQString(std::string text);
     static std::string ToString(QString text);
     static  std::vector<std::string> Split(const std::string& str, char delimiter);
     static std::string ToString(int n);
+    static std::string ToString(double n);
+    static std::string ToString(long n);
+    static std::string ToString(long long n);
     static std::string ToString(bool n);
 };
 

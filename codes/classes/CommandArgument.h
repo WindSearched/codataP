@@ -22,6 +22,8 @@ public:
     bool GetBool(const std::string& key) const;
     bool TryGetBool(const std::string& key, bool& value) const;
 
+    bool TryGetDouble(const std::string& key, double& value) const;
+
     std::string ParamGet(int index) const;
     bool TryParamGet(int index, std::string& value) const;
 

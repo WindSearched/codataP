@@ -34,8 +34,6 @@ BranchBuilder Core::branchBuilder = BranchBuilder();
 SEvent<> Core::OnStart;
 SEvent<> Core::OnStop;
 
-MainWindow* Core::mainWindow = nullptr;
-
 QString Core::ToQString(std::string text) {
     QString qtext = QString::fromUtf8(
         text.data(),
@@ -67,6 +65,18 @@ std::vector<std::string> Core::Split(const std::string &str, char delimiter)
 }
 
 std::string Core::ToString(int n) {
+    return std::to_string(n);
+}
+
+std::string Core::ToString(double n) {
+    return std::to_string(n);
+}
+
+std::string Core::ToString(long n) {
+    return std::to_string(n);
+}
+
+std::string Core::ToString(long long n) {
     return std::to_string(n);
 }
 

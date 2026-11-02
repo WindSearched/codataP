@@ -14,14 +14,13 @@
 #include <string>
 
 #include "codes/Tube.h"
-#include "CdPlugin/codes/Branch.h"
-#include "CdPlugin/codes/YmlManager.h"
+#include "codes/Branch.h"
+#include "codes/YmlManager.h"
 #include "codes/Core.h"
 #include "codes/Data.h"
 #include "codes/MainWindow.h"
 #include "codes/Sets.h"
 #include "codes/branches/math.h"
-#include "codes/classes/PluginLoader.h"
 #include "utils/SingleInstance.h"
 
 // === 在这里添加 Windows 特定的头文件引入 ===
@@ -115,16 +114,9 @@ int start(QApplication& app, MainWindow& window) {
 
     //close yaml
     Core::OnStop.Add([] {
-        YmlManager::OnClose();
-
         std::ofstream fout(Data::setsPath);
         fout << Sets::sets;
         fout.close();
-    });
-    Core::OnStop.Add([&window] {
-       for (auto& i : PluginLoader::plugins) {
-           delete i.second;
-       }
     });
 
     auto& bb = Core::branchBuilder;
