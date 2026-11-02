@@ -9,6 +9,7 @@
 
 #include "Branch.h"
 #include "Event.h"
+#include "MainWindow.h"
 #include "SEvent.h"
 #include "classes/BranchBuilder.h"
 
@@ -18,6 +19,7 @@ class Core {
     static Branch branch; // root of commands
     static SEvent<> OnStart, OnStop;
     static BranchBuilder branchBuilder;
+    static MainWindow* mainWindow;
 
     static QString ToQString(std::string text);
     static std::string ToString(QString text);

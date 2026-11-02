@@ -89,6 +89,7 @@ void registerBranches() {
     ;
 }
 int start(QApplication& app, MainWindow& window) {
+    Core::mainWindow = &window;
 
     //try load tube cache
     Core::OnStart.Add([&window] {

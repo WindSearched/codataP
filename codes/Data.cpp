@@ -96,6 +96,19 @@ std::filesystem::path Data::GetProximatePath(std::filesystem::path path) {
     return fs::proximate(path);
 }
 
+bool Data::IsExecutable(std::filesystem::path p) {
+    if (!fs::exists(p) || fs::is_directory(p)) {
+        return false;
+    }
+
+    auto perms = fs::status(p).permissions();
+
+    // 检查所有者、所属组或其他用户是否拥有执行权限
+    return ((perms & fs::perms::owner_exec) != fs::perms::none ||
+            (perms & fs::perms::group_exec) != fs::perms::none ||
+            (perms & fs::perms::others_exec) != fs::perms::none);
+}
+
 std::string Data::Read(std::filesystem::path path) {
     std::ifstream file(path);
     if (!file.is_open()) return {};
@@ -153,7 +166,7 @@ bool Data::OpenTextDefault(std::filesystem::path path) {
 #endif
 
 
-std::string Data::ExecuteCCommand(std::string command) {
+std::string Data::ExecuteCommand(std::string command) {
     std::array<char, 128> buffer;
     string result;
 

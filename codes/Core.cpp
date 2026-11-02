@@ -10,6 +10,7 @@
 #include "Sets.h"
 
 using string = std::string;
+MainWindow* Core::mainWindow = nullptr;
 
 Branch Core::branch = Branch ("codata")
     .AddBranch(Branch("exit")

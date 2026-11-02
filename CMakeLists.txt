@@ -52,6 +52,12 @@ add_executable(codataP main.cpp
         codes/classes/BranchBuilder.h
         codes/plugins/lua/LuaMan.cpp
         codes/plugins/lua/LuaMan.h
+        codes/classes/CdFunc.cpp
+        codes/classes/CdFunc.h
+        codes/classes/CommandArgument.cpp
+        codes/classes/CommandArgument.h
+        codes/plugins/executable/Exec.cpp
+        codes/plugins/executable/Exec.h
 )
 
 target_link_libraries(codataP PRIVATE

@@ -21,11 +21,12 @@ public:
     static bool IsFile(std::filesystem::path path);
     static bool IsDirectory(std::filesystem::path path);
     static std::filesystem::path GetProximatePath(std::filesystem::path path);
+    static bool IsExecutable(std::filesystem::path);
 
     static std::string Read(std::filesystem::path path);
     static bool Write(std::filesystem::path path, std::string data);
     static bool OpenTextDefault(std::filesystem::path);
-    static std::string ExecuteCCommand(std::string command);
+    static std::string ExecuteCommand(std::string command);
 };
 
 
