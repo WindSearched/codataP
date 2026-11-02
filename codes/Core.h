@@ -7,7 +7,7 @@
 #include <QApplication>
 #include <qstring.h>
 
-#include "Branch.h"
+#include "../CdPlugin/codes/Branch.h"
 #include "Event.h"
 #include "MainWindow.h"
 #include "SEvent.h"
@@ -19,6 +19,8 @@ class Core {
     static Branch branch; // root of commands
     static SEvent<> OnStart, OnStop;
     static BranchBuilder branchBuilder;
+    static MainWindow* mainWindow;
+
     static MainWindow* mainWindow;
 
     static QString ToQString(std::string text);
