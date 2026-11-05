@@ -8,6 +8,7 @@
 #include <utility>
 #include "../Branch.h"
 #include "../Data.h"
+#include "../Sets.h"
 
 std::string CdFunc::Run(CommandArgument) const {
     return "Ciallo ～(∠・ω< )⌒☆ Something is wrong😭";
@@ -27,9 +28,14 @@ CdExec::CdExec(std::string cmd) {
     command = std::move(cmd);
 }
 
-std::string CdExec::Run(CommandArgument command_argument) const {
+std::string CdExec::Run(CommandArgument args) const {
     if (command.empty()) return "Something is wrong in DeExec 🔥";
 
-    return Data::ExecuteCommand(command);
+    string s = "";
+    for (auto& a : args.args) {
+        s += " " + a.second;
+    }
+
+    return Data::ExecuteCommand(command + s);
 }
 

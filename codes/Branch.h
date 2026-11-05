@@ -31,10 +31,8 @@ public:
 };
 
 class Branch {
-private:
-    CdFunc* execute;
-
 public:
+    CdFunc* execute;
     std::string name;
 
     std::function<

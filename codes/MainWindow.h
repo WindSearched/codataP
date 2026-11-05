@@ -81,7 +81,7 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
 private slots:
     void onButtonClicked();
-    void SetInputSuggestion(Branch* node, std::vector<std::string> args, int listCount, std::string last);
+    void SetInputSuggestion(Branch* node, int argsCount, int listCount, std::string last);
 };
 
 

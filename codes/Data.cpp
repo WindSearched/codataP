@@ -177,7 +177,7 @@ std::string Data::ExecuteCommand(std::string command) {
 
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
 
-    if (pipe) {
+    if (!pipe) {
         return "popen() failed";
     }
 

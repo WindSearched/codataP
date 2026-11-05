@@ -104,7 +104,7 @@ MainWindow::MainWindow(QWidget* parent)
         // std::vector<std::string> l;
         // std::ranges::copy(a, std::back_inserter(l));
 
-        SetInputSuggestion(branch, args.GetList(), result.size(), last);
+        SetInputSuggestion(branch, args.Count(), result.size(), last);
     });
     //add setting of suggestion
     onTabDown.Add([this] {
@@ -352,14 +352,14 @@ void MainWindow::onButtonClicked()
     input->clear();
 }
 
-void MainWindow::SetInputSuggestion(Branch* node, std::vector<std::string> args, int listCount, std::string last) {
+void MainWindow::SetInputSuggestion(Branch* node, int argsCount, int listCount, std::string last) {
     std::string sug = "";
     auto add =  [&sug](std::string t) {
         sug += sug == "" ? t : "/" + t;
     };
 
     bool branchnotfound = !last.empty() && listCount == 0;
-    int count = args.size();
+    int count = argsCount;
     bool brancharg = node->args.size() >0;
 
     if (branchnotfound) {//not found branches

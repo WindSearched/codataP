@@ -21,6 +21,7 @@
 #include "codes/MainWindow.h"
 #include "codes/Sets.h"
 #include "codes/branches/math.h"
+#include "codes/plugins/executable/Exec.h"
 #include "utils/SingleInstance.h"
 
 // === 在这里添加 Windows 特定的头文件引入 ===
@@ -119,16 +120,9 @@ int start(QApplication& app, MainWindow& window) {
         fout.close();
     });
 
-    auto& bb = Core::branchBuilder;
-    bb.InsertBranch("builderTest");
-    bb.AddArgument("arg");
-    bb.AddExecute([](CommandArgument args) -> string {
-        string a;
-        if (!args.TryGet("arg", a)) return "Error";
-        return "Builder testing " + a;
-    });
-    auto b = bb.Build();
-    Core::branch.AddBranch(b);
+    Exec::Loads(Data::pluginsPath);
+
+    window.LogLineHead();
 
     qInfo() << "Before Core::OnStart";
     std::cerr << "Before Core::OnStart" << std::endl;
@@ -199,7 +193,6 @@ int main(int argc, char* argv[])
             registerBranches();          // 无 GUI 依赖的分支
 
             MainWindow mainWindow;
-            mainWindow.LogLineHead();
             Core::mainWindow = &mainWindow;
 
             mainWindow.show();
@@ -350,7 +343,6 @@ int main(int argc, char* argv[])
     registerBranches();
 
     MainWindow mainWindow;
-    mainWindow.LogLineHead();
     Core::mainWindow = &mainWindow;
 
     // ---- exec 分派：命令树即白名单 ----
