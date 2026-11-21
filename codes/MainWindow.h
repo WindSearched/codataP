@@ -53,6 +53,10 @@ public:
     bool HasLineHeadInLastLine();
     void RemoveLastLine();
     void RemoveLineHeadWeatherExists();
+
+    SEvent<std::string> onTextChanged;
+    SEvent<> onEnterDown, onTabDown,
+        onRightDown, onLeftDown, onUpDown, onDownDown;
 public slots:
     void showAndActivate();
 
@@ -64,9 +68,7 @@ private:
     QPlainTextEdit* log;
     SuggestLineEdit *input;
 
-    SEvent<std::string> onTextChanged;
-    SEvent<> onEnterDown, onTabDown,
-        onRightDown, onLeftDown, onUpDown, onDownDown;
+
 
     ///if the shift key is pressed
     bool shift_ = false;
@@ -79,6 +81,8 @@ private:
     void SetList(std::vector<std::string> elements);
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
 private slots:
     void onButtonClicked();
     void SetInputSuggestion(Branch* node, int argsCount, int listCount, std::string last);

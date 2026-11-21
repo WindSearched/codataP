@@ -25,9 +25,13 @@ MainWindow::MainWindow(QWidget* parent)
     initUI();
     auto *central = new QWidget(this);
     auto *layout = new QVBoxLayout(central);
-    //setCentralWidget(central);
 
     input->installEventFilter(this);
+
+    setFocusPolicy(Qt::StrongFocus);
+    list->installEventFilter(this);
+    log->setReadOnly(true);
+    log->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
 
     //add put in tube function
     onEnterDown.Add([this] {
@@ -106,6 +110,9 @@ MainWindow::MainWindow(QWidget* parent)
 
         SetInputSuggestion(branch, args.Count(), result.size(), last);
     });
+    onTextChanged.Add([this](string) {
+        input->setFocus();
+    });
     //add setting of suggestion
     onTabDown.Add([this] {
         if (list->count() == 0) return;
@@ -145,7 +152,7 @@ MainWindow::MainWindow(QWidget* parent)
         if (shift_) return;
         int row = list->currentRow();
         if (row == -1) {
-            row = 0;
+            row = 1;
         }
         else {
             row++;
@@ -224,6 +231,16 @@ void MainWindow::initUI()
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+    if (obj == list && event->type() == QEvent::KeyPress) {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+
+        if (keyEvent->key() != Qt::Key_Control && keyEvent->key() != Qt::Key_Shift) {
+            input->setFocus();
+            AppendInput(Core::ToString(keyEvent->text()), true);
+            return true;
+        }
+    }
+
     if (obj == input) { //if is from input box
         auto* key = static_cast<QKeyEvent*>(event);
         if (event->type() == QEvent::KeyPress) { //key pressed
@@ -265,6 +282,22 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
     }
     return false;
 }
+
+void MainWindow::showEvent(QShowEvent *event) {
+    input->setFocus();
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Control|| event->key() == Qt::Key_Alt||
+        event->key() == Qt::Key_Shift || event->key() == Qt::Key_Meta) {
+        QWidget::keyPressEvent(event);
+        return;
+    }
+
+    AppendInput(Core::ToString(event->text()), true);
+    input->setFocus();
+}
+
 void MainWindow::LogLine(std::string logged) {
     auto l = Core::ToQString(logged);
 

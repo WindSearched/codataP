@@ -123,6 +123,7 @@ int start(QApplication& app, MainWindow& window) {
     Exec::Loads(Data::pluginsPath);
 
     window.LogLineHead();
+    window.onTextChanged.Invoke("");
 
     qInfo() << "Before Core::OnStart";
     std::cerr << "Before Core::OnStart" << std::endl;
@@ -143,6 +144,13 @@ int main(int argc, char* argv[])
 
     QApplication::setApplicationName("Codata");
     QApplication::setOrganizationName("WS");
+
+#ifdef Q_OS_WIN
+    if (!launchedFromTerminal()) {
+        FreeConsole();
+    }
+#endif
+
 
     // 关闭窗口后继续在后台运行（注意：如需真正后台常驻，
     // 应结合 MainWindow 的关闭策略，这里保持原状）

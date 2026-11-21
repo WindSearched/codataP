@@ -24,7 +24,8 @@ find_package(yaml-cpp REQUIRED)
 
 qt_standard_project_setup()
 
-add_executable(codataP main.cpp
+add_executable(codataP WIN32
+        main.cpp
         codes/Tube.cpp
         codes/Tube.h
         codes/Event.cpp
@@ -71,7 +72,5 @@ target_link_libraries(codataP PRIVATE
 
 if(WIN32)
     # 只要将 WIN32_EXECUTABLE 设为 FALSE，MinGW 就会默认保留控制台窗口
-    set_target_properties(codataP PROPERTIES WIN32_EXECUTABLE FALSE)
+    set_target_properties(codataP PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
-
-

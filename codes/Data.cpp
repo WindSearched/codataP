@@ -160,7 +160,7 @@ bool Data::OpenTextDefault(std::filesystem::path path) {
 #endif
 
     // 3. 执行系统命令
-    std::system(command.c_str());
+    int n = std::system(command.c_str());
 
     return true;
 }
@@ -175,7 +175,7 @@ std::string Data::ExecuteCommand(std::string command) {
     std::array<char, 128> buffer;
     string result;
 
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
+    const std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
 
     if (!pipe) {
         return "popen() failed";
@@ -187,3 +187,5 @@ std::string Data::ExecuteCommand(std::string command) {
 
     return result;
 }
+
+YAML::Node Sets::sets = Data::IsFile(Data::setsPath) ? YAML::LoadFile(Data::setsPath.string()) : YAML::Node();

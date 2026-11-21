@@ -6,7 +6,6 @@
 
 #include "Data.h"
 
-YAML::Node Sets::sets = Data::IsFile(Data::setsPath) ? YAML::LoadFile(Data::setsPath) : YAML::Node();
 
 
 std::string Sets::GetUser() {
@@ -21,7 +20,7 @@ void Sets::SetUser(string user) {
 std::string Sets::GetPointPath() {
     Node n = sets["pointPath"];
     auto p = n ? n.as<string>() : Data::currentPath.string();
-    return Data::GetProximatePath(p);
+    return Data::GetProximatePath(p).string();
 }
 
 void Sets::SetPointPath(const string& pointPath) {

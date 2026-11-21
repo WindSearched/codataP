@@ -48,6 +48,9 @@ bool Exec::Load(std::filesystem::path path) {
 }
 
 bool Exec::Loads(std::filesystem::path pluginPath) {
+    if (!Data::IsDirectory(pluginPath)) {
+        Data::CreateDirectory(pluginPath);
+    }
     for (const auto& file : std::filesystem::directory_iterator(pluginPath)) {
         if (file.is_regular_file()) {
             if (Data::IsExecutable(file)) {

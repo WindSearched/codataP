@@ -268,11 +268,11 @@ std::vector<Branch> Branch::FromString(std::string text) {
         int lastInit = final +1;
         for (size_t i = final + 1; i < text.length(); i++) {
             if (text[i] == ',') {
-                b.AddArgument(text.substr(lastInit, i + 1 - lastInit));
+                b.AddArgument(text.substr(lastInit, i - lastInit));
                 lastInit = i + 1;
             }
             else if (text[i + 1] == ']') {
-                b.AddArgument(text.substr(lastInit, i +1 - lastInit));
+                b.AddArgument(text.substr(lastInit, i + 1 - lastInit));
                 lastInit = i + 1;
                 break;
             }
