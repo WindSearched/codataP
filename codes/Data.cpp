@@ -5,6 +5,7 @@
 #include "Data.h"
 
 #include <fstream>
+#include <curl/curl.h>
 
 #include "Core.h"
 #include "Sets.h"
@@ -58,6 +59,20 @@ Branch Data::branch = Branch("data")
 
             return b ? "Success" : "Failure";
         }))
+    .AddBranch(Branch("httpGet")
+        .AddBranch(Branch("test")
+            .AddExecution([](CommandArgument)-> string {
+                return HttpGet("https://example.com/");
+            })
+            )
+        .AddArgument("url")
+        .AddExecution([](CommandArgument args) -> string {
+            string url;
+            if (!args.TryGet("url", url)) return "The argument 'url' is not exists";
+            auto content = HttpGet(url);
+            return content;
+        })
+    )
 ;
 Branch Data::setsBranch = Branch("sets")
     .AddBranch(Branch("saveTube")
@@ -108,6 +123,15 @@ bool Data::IsExecutable(std::filesystem::path p) {
     return ((perms & fs::perms::owner_exec) != fs::perms::none ||
             (perms & fs::perms::group_exec) != fs::perms::none ||
             (perms & fs::perms::others_exec) != fs::perms::none);
+}
+
+bool Data::IsExtension(std::filesystem::path path, std::string extension) {
+    return path.extension() == extension;
+}
+
+bool Data::IsExtension(std::string path, std::string extension) {
+    auto p = fs::path(path);
+    return p.extension() == extension;
 }
 
 std::string Data::Read(std::filesystem::path path) {
@@ -186,6 +210,47 @@ std::string Data::ExecuteCommand(std::string command) {
     }
 
     return result;
+}
+
+size_t Data::WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
+    size_t totalSize = size * nmemb;
+    std::string* result = (std::string*)userp;
+
+    result->append((char*)contents, totalSize);
+
+    return totalSize;
+}
+
+std::string Data::HttpGet(const std::string &url) {
+    CURL* curl = curl_easy_init();
+    std::string response;
+
+    if (curl)
+    {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+
+        // 超时时间
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+
+        // 跟随重定向
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+        CURLcode res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK)
+        {
+            response.clear();
+            std::cerr << "请求失败: "
+                      << curl_easy_strerror(res) << std::endl;
+        }
+
+        curl_easy_cleanup(curl);
+    }
+
+    return response;
 }
 
 YAML::Node Sets::sets = Data::IsFile(Data::setsPath) ? YAML::LoadFile(Data::setsPath.string()) : YAML::Node();

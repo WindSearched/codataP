@@ -23,12 +23,17 @@ public:
     static bool IsDirectory(std::filesystem::path path);
     static std::filesystem::path GetProximatePath(std::filesystem::path path);
     static bool IsExecutable(std::filesystem::path);
+    static bool IsExtension(std::filesystem::path path ,std::string extension);
+    static bool IsExtension(std::string path ,std::string extension);
 
     static std::string Read(std::filesystem::path path);
     static bool Write(std::filesystem::path path, std::string data);
     static void CreateDirectory(std::filesystem::path path);
     static bool OpenTextDefault(std::filesystem::path);
     static std::string ExecuteCommand(std::string command);
+
+    static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp);
+    static std::string HttpGet(const std::string& url);
 };
 
 

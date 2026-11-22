@@ -12,6 +12,11 @@
 using string = std::string;
 MainWindow* Core::mainWindow = nullptr;
 
+std::string Core::ExecuteCommand(std::string command) {
+    auto split = Core::Split(command, ' ');
+    return branch.Command(split);
+}
+
 Branch Core::branch = Branch ("codata")
     .AddBranch(Branch("exit")
         .AddExecution([](const CommandArgument&) -> std::string {

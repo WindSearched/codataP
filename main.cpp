@@ -22,6 +22,7 @@
 #include "codes/Sets.h"
 #include "codes/branches/math.h"
 #include "codes/plugins/executable/Exec.h"
+#include "codes/plugins/lua/LuaMan.h"
 #include "utils/SingleInstance.h"
 
 // === 在这里添加 Windows 特定的头文件引入 ===
@@ -88,6 +89,7 @@ void registerBranches() {
     .AddBranch(math::math_)
     .AddBranch(Data::branch)
     .AddBranch(Data::setsBranch)
+    .AddBranch(LuaMan::branch_)
     ;
 }
 int start(QApplication& app, MainWindow& window) {
@@ -121,6 +123,7 @@ int start(QApplication& app, MainWindow& window) {
     });
 
     Exec::Loads(Data::pluginsPath);
+    LuaMan::Register();
 
     window.LogLineHead();
     window.onTextChanged.Invoke("");
