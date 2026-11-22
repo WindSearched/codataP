@@ -15,13 +15,13 @@ using string = std::string;
 
 Branch Data::branch = Branch("data")
     .AddBranch(Branch("current")
-        .AddExecution([](CommandArgument) -> string {
+        .AddExecution([](const CommandArgument&) -> string {
             return Data::currentPath.string();
             })
         )
     .AddBranch(Branch("fileExist")
         .AddArgument("path")
-        .AddExecution([](CommandArgument args)->string {
+        .AddExecution([](const CommandArgument &args)->string {
             string path;
             if (!args.TryGet("path", path)) return "The argument path is not exists";
             bool b = IsFile(path);
@@ -29,7 +29,7 @@ Branch Data::branch = Branch("data")
         }))
     .AddBranch(Branch("directoryExist")
         .AddArgument("path")
-        .AddExecution([](CommandArgument args)->string {
+        .AddExecution([](const CommandArgument &args)->string {
             string path;
             if (!args.TryGet("path", path)) return "The argument path is not exists";
             bool b = IsFile(path);
@@ -37,7 +37,7 @@ Branch Data::branch = Branch("data")
         }))
     .AddBranch(Branch("read")
         .AddArgument("path")
-        .AddExecution([](CommandArgument args)->string {
+        .AddExecution([](const CommandArgument &args)->string {
             string path;
             if (!args.TryGet("path", path)) return "The argument path is not exists";
             string t = Read(path);
@@ -47,7 +47,7 @@ Branch Data::branch = Branch("data")
         .AddArgument("path")
         .AddArgument("content")
         .AddArgument("open")
-        .AddExecution([](CommandArgument args)->string {
+        .AddExecution([](const CommandArgument &args)->string {
             string path, content;
             bool open = args.GetBool("open");
             if (!args.TryGet("path", path)) return "The argument path is not exists";
@@ -61,12 +61,12 @@ Branch Data::branch = Branch("data")
         }))
     .AddBranch(Branch("httpGet")
         .AddBranch(Branch("test")
-            .AddExecution([](CommandArgument)-> string {
+            .AddExecution([](const CommandArgument&)-> string {
                 return HttpGet("https://example.com/");
             })
             )
         .AddArgument("url")
-        .AddExecution([](CommandArgument args) -> string {
+        .AddExecution([](const CommandArgument &args) -> string {
             string url;
             if (!args.TryGet("url", url)) return "The argument 'url' is not exists";
             auto content = HttpGet(url);
@@ -77,7 +77,7 @@ Branch Data::branch = Branch("data")
 Branch Data::setsBranch = Branch("sets")
     .AddBranch(Branch("saveTube")
         .AddArgument(BranchArgument::boolean("arg"))
-        .AddExecution([](CommandArgument args) -> string {
+        .AddExecution([](const CommandArgument& args) -> string {
             bool a;
 
             if (args.TryGetBool("arg", a)) {
@@ -85,8 +85,6 @@ Branch Data::setsBranch = Branch("sets")
                 return "Set " + Core::ToString(a) + " " + (a ? "success" : "failure");
             }
             auto n = Sets::sets["saveTube"];
-            if (n)
-                n = n;
             return n && n.as<bool>() ? "state: True" : "State: False";
         })
         )
@@ -96,23 +94,23 @@ std::filesystem::path Data::currentPath = fs::current_path();
 std::filesystem::path Data::setsPath = currentPath / "sets.yml";
 std::filesystem::path Data::pluginsPath = currentPath / "plugins";
 
-std::filesystem::path Data::ToPath(std::string path) {
+std::filesystem::path Data::ToPath(const std::string &path) {
     return fs::path(path);
 }
 
-bool Data::IsFile(std::filesystem::path path) {
+bool Data::IsFile(const std::filesystem::path &path) {
     return std::filesystem::is_regular_file(path);
 }
 
-bool Data::IsDirectory(std::filesystem::path path) {
+bool Data::IsDirectory(const std::filesystem::path& path) {
     return fs::is_directory(path);
 }
 
-std::filesystem::path Data::GetProximatePath(std::filesystem::path path) {
+std::filesystem::path Data::GetProximatePath(const std::filesystem::path &path) {
     return fs::proximate(path);
 }
 
-bool Data::IsExecutable(std::filesystem::path p) {
+bool Data::IsExecutable(const std::filesystem::path& p) {
     if (!fs::exists(p) || fs::is_directory(p)) {
         return false;
     }
@@ -125,16 +123,16 @@ bool Data::IsExecutable(std::filesystem::path p) {
             (perms & fs::perms::others_exec) != fs::perms::none);
 }
 
-bool Data::IsExtension(std::filesystem::path path, std::string extension) {
+bool Data::IsExtension(const std::filesystem::path& path, const std::string& extension) {
     return path.extension() == extension;
 }
 
-bool Data::IsExtension(std::string path, std::string extension) {
+bool Data::IsExtension(const std::string& path, const std::string& extension) {
     auto p = fs::path(path);
     return p.extension() == extension;
 }
 
-std::string Data::Read(std::filesystem::path path) {
+std::string Data::Read(const std::filesystem::path& path) {
     std::ifstream file(path);
     if (!file.is_open()) return {};
 
@@ -145,7 +143,7 @@ std::string Data::Read(std::filesystem::path path) {
     return content;
 }
 
-bool Data::Write(std::filesystem::path path, std::string data) {
+bool Data::Write(const std::filesystem::path& path, const std::string& data) {
     if (path.has_parent_path())
         fs::create_directory(path.parent_path());
 
@@ -157,11 +155,11 @@ bool Data::Write(std::filesystem::path path, std::string data) {
     return true;
 }
 
-void Data::CreateDirectory(std::filesystem::path path) {
+void Data::CreateDirectory(const std::filesystem::path& path) {
     fs::create_directories(path);
 }
 
-bool Data::OpenTextDefault(std::filesystem::path path) {
+bool Data::OpenTextDefault(const std::filesystem::path& path) {
     if (!fs::exists(path)) {
         return false;
     }
@@ -184,7 +182,7 @@ bool Data::OpenTextDefault(std::filesystem::path path) {
 #endif
 
     // 3. 执行系统命令
-    int n = std::system(command.c_str());
+    std::system(command.c_str());
 
     return true;
 }
@@ -195,8 +193,8 @@ bool Data::OpenTextDefault(std::filesystem::path path) {
 #endif
 
 
-std::string Data::ExecuteCommand(std::string command) {
-    std::array<char, 128> buffer;
+std::string Data::ExecuteCommand(const std::string& command) {
+    std::array<char, 128> buffer{};
     string result;
 
     const std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
@@ -214,9 +212,9 @@ std::string Data::ExecuteCommand(std::string command) {
 
 size_t Data::WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t totalSize = size * nmemb;
-    std::string* result = (std::string*)userp;
+    auto* result = static_cast<std::string *>(userp);
 
-    result->append((char*)contents, totalSize);
+    result->append(static_cast<char *>(contents), totalSize);
 
     return totalSize;
 }
