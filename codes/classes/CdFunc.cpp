@@ -9,6 +9,7 @@
 #include "../Branch.h"
 #include "../Data.h"
 #include "../Sets.h"
+#include "../plugins/lua/LuaMan.h"
 
 std::string CdFunc::Run(CommandArgument) const {
     return "Ciallo ～(∠・ω< )⌒☆ Something is wrong😭";
@@ -39,3 +40,15 @@ std::string CdExec::Run(CommandArgument args) const {
     return Data::ExecuteCommand(command + s);
 }
 
+CdLuaFunc::CdLuaFunc(std::vector<std::string> loc) {
+    location = std::move(loc);
+}
+
+std::string CdLuaFunc::Run(CommandArgument command_argument) const {
+    auto f = LuaMan::GetFunction(location);
+    if (f.valid()) {
+        return f(command_argument);
+    }
+    else
+        return "Lua-branch the location is not exist";
+}

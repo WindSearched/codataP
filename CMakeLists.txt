@@ -62,6 +62,10 @@ add_executable(codataP WIN32
         codes/classes/CommandArgument.h
         codes/plugins/executable/Exec.cpp
         codes/plugins/executable/Exec.h
+        codes/plugins/lua/LuaAPI.cpp
+        codes/plugins/lua/LuaAPI.h
+        codes/plugins/PluginsMan.cpp
+        codes/plugins/PluginsMan.h
 )
 target_include_directories(codataP PRIVATE ${LUA_INCLUDE_DIR})
 

@@ -31,5 +31,13 @@ public:
     std::string command;
 };
 
+class CdLuaFunc : public CdFunc {
+public:
+    explicit CdLuaFunc(std::vector<std::string>);
+    std::string Run(CommandArgument) const override;
+    std::vector<std::string> location;
+};
+
+
 
 #endif //CODATAP_CDFUNC_H

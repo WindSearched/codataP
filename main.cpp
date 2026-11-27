@@ -21,6 +21,7 @@
 #include "codes/MainWindow.h"
 #include "codes/Sets.h"
 #include "codes/branches/math.h"
+#include "codes/plugins/PluginsMan.h"
 #include "codes/plugins/executable/Exec.h"
 #include "codes/plugins/lua/LuaMan.h"
 #include "utils/SingleInstance.h"
@@ -122,8 +123,8 @@ int start(QApplication& app, MainWindow& window) {
         fout.close();
     });
 
-    Exec::Loads(Data::pluginsPath);
     LuaMan::Register();
+    PluginsMan::Load(Data::pluginsPath);
 
     window.LogLineHead();
     window.onTextChanged.Invoke("");
